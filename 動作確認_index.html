@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>救急外来 振り返りシート</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#f2f4f7;color:#1a1a1a;min-height:100vh;padding-bottom:48px;}
+header{background:#1a5fa8;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;}
+header h1{font-size:16px;font-weight:600;}
+header p{font-size:12px;opacity:.8;margin-top:2px;}
+.section{background:#fff;margin:12px;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+.sec-head{background:#f7f9fc;padding:10px 14px;border-bottom:1px solid #e8edf2;}
+.sec-head h2{font-size:13px;font-weight:600;color:#1a5fa8;}
+.field{padding:12px 14px;border-bottom:1px solid #f0f0f0;}
+.field:last-child{border-bottom:none;}
+.lbl{font-size:12px;color:#666;margin-bottom:6px;font-weight:500;}
+.req{color:#e53e3e;margin-left:2px;}
+.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+input[type=number]{width:68px;padding:8px 6px;border:1px solid #d0d7e0;border-radius:8px;font-size:15px;text-align:center;-webkit-appearance:none;appearance:none;}
+input[type=text]{width:100%;padding:9px 10px;border:1px solid #d0d7e0;border-radius:8px;font-size:14px;font-family:inherit;}
+textarea{width:100%;padding:9px 10px;border:1px solid #d0d7e0;border-radius:8px;font-size:14px;resize:vertical;min-height:72px;font-family:inherit;line-height:1.5;}
+.chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip,.mchip,.sch,.sbtn{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:manipulation;}
+.chip{padding:0 16px;border-radius:99px;border:1px solid #d0d7e0;font-size:13px;color:#555;background:#fff;height:44px;display:inline-flex;align-items:center;justify-content:center;}
+.chip.sel{background:#1a5fa8;color:#fff;border-color:#1a5fa8;}
+.mchip{padding:0 14px;border-radius:99px;border:1px solid #d0d7e0;font-size:13px;color:#555;background:#fff;height:44px;display:inline-flex;align-items:center;justify-content:center;}
+.mchip.sel{background:#e8f0fb;color:#1a5fa8;border-color:#1a5fa8;}
+.shift-wrap{display:flex;gap:8px;}
+.sch{flex:1;border-radius:10px;border:1px solid #d0d7e0;font-size:14px;font-weight:500;background:#fff;color:#555;height:48px;display:flex;align-items:center;justify-content:center;}
+.sch.day.sel{background:#fff8e1;color:#856404;border-color:#f5a623;}
+.sch.night.sel{background:#e8f0fb;color:#1a5fa8;border-color:#1a5fa8;}
+.sbtn{flex:1;border-radius:8px;border:1px solid #d0d7e0;font-size:13px;font-weight:500;background:#fff;color:#555;height:44px;display:flex;align-items:center;justify-content:center;}
+.sbtn.good.sel{background:#e6f4ea;color:#1e7e34;border-color:#1e7e34;}
+.sbtn.normal.sel{background:#fff8e1;color:#856404;border-color:#f5a623;}
+.sbtn.bad.sel{background:#fde8e8;color:#b91c1c;border-color:#e53e3e;}
+.sub{background:#f7f9fc;border-radius:8px;padding:10px 12px;margin-top:8px;}
+.case-card{background:#f7f9fc;border:1px solid #e0e7ef;border-radius:10px;padding:12px;margin-bottom:10px;position:relative;}
+.clbl{font-size:11px;font-weight:600;color:#1a5fa8;margin-bottom:8px;}
+.rm{position:absolute;top:8px;right:8px;background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.add-btn{width:100%;border:1.5px dashed #a0b4cc;border-radius:10px;background:#f0f5fb;color:#1a5fa8;font-size:13px;font-weight:500;cursor:pointer;height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.save-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 24px);margin:16px 12px 8px;background:#1a5fa8;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;height:52px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.hist-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 24px);margin:0 12px 8px;background:#fff;color:#1a5fa8;border:1.5px solid #1a5fa8;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.exp-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 24px);margin:0 12px;background:#fff;color:#555;border:1px solid #d0d7e0;border-radius:12px;font-size:14px;cursor:pointer;height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.err{font-size:11px;color:#e53e3e;margin-top:4px;display:none;}
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
+.mbg.open{display:flex;}
+.modal{background:#fff;border-radius:16px;width:100%;max-width:480px;margin:auto;}
+.mhead{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;}
+.mhead h3{font-size:15px;font-weight:600;}
+.mcls{background:none;border:none;font-size:24px;color:#aaa;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+.mbody{padding:12px 16px;}
+.hi{padding:12px;border:1px solid #e8edf2;border-radius:10px;margin-bottom:8px;cursor:pointer;touch-action:manipulation;}
+.hi-date{font-size:13px;font-weight:600;color:#1a5fa8;}
+.hi-meta{font-size:12px;color:#888;margin-top:3px;}
+.dr{display:flex;gap:6px;margin-bottom:6px;font-size:13px;}
+.dl{color:#888;min-width:110px;flex-shrink:0;}
+.dv{color:#1a1a1a;flex:1;}
+.ds{margin-bottom:14px;}
+.dst{font-size:12px;font-weight:600;color:#1a5fa8;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e8edf2;}
+.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;margin-right:4px;}
+.b-bl{background:#e8f0fb;color:#1a5fa8;}
+.b-am{background:#fff8e1;color:#856404;}
+.b-gn{background:#e6f4ea;color:#1e7e34;}
+.b-rd{background:#fde8e8;color:#b91c1c;}
+.b-gy{background:#f0f0f0;color:#555;}
+.btn-row{display:flex;gap:8px;margin-top:12px;}
+.b-edit{flex:1;height:44px;border-radius:10px;border:1.5px solid #1a5fa8;background:#fff;color:#1a5fa8;font-size:13px;font-weight:500;cursor:pointer;touch-action:manipulation;}
+.b-del{flex:1;height:44px;border-radius:10px;border:1.5px solid #e53e3e;background:#fff;color:#e53e3e;font-size:13px;font-weight:500;cursor:pointer;touch-action:manipulation;}
+.cfmbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:16px;}
+.cfmbg.open{display:flex;}
+.cfm{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:320px;text-align:center;}
+.cfm p{font-size:14px;margin-bottom:16px;color:#333;line-height:1.6;}
+.cfm-btns{display:flex;gap:8px;}
+.cfm-btns button{flex:1;height:44px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;touch-action:manipulation;}
+.b-cfm-c{border:1px solid #d0d7e0;background:#fff;color:#555;}
+.b-cfm-d{border:none;background:#e53e3e;color:#fff;}
+.b-cfm-bl{border:none;background:#1a5fa8;color:#fff;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>救急外来 振り返りシート</h1>
+  <p id="hdate"></p>
+</header>
+
+<div class="section">
+  <div class="sec-head"><h2>基本情報</h2></div>
+  <div class="field">
+    <div class="lbl">勤務区分<span class="req">*</span></div>
+    <div class="shift-wrap">
+      <div class="sch day" id="s-day">☀️ 日勤</div>
+      <div class="sch night" id="s-night">🌙 夜勤</div>
+    </div>
+    <div class="err" id="e-shift">勤務区分を選択してください</div>
+  </div>
+  <div class="field">
+    <div class="lbl">看護師の人数<span class="req">*</span></div>
+    <div class="row">
+      <input type="number" id="nurse-n" min="1" max="99" placeholder="0">
+      <span style="font-size:13px;color:#666;">名</span>
+      <div class="chips" style="margin-left:4px;">
+        <div class="chip" id="st-enough">十分</div>
+        <div class="chip" id="st-normal">普通</div>
+        <div class="chip" id="st-short">不足</div>
+      </div>
+    </div>
+    <div class="err" id="e-nurse">人数と配置状況を入力してください</div>
+  </div>
+  <div class="field">
+    <div class="lbl">休憩時間の確保<span class="req">*</span></div>
+    <div class="chips">
+      <div class="chip" id="br-ok">確保できた</div>
+      <div class="chip" id="br-ng">できなかった</div>
+    </div>
+    <div class="err" id="e-break">休憩状況を選択してください</div>
+    <div class="sub" id="br-detail" style="display:none;">
+      <div class="lbl" style="margin-bottom:6px;">不足時間・応援要請</div>
+      <div class="row" style="margin-bottom:8px;">
+        <input type="number" id="br-min" min="10" max="120" step="10" placeholder="0">
+        <span style="font-size:13px;color:#666;">分不足</span>
+        <input type="number" id="br-staff" min="1" max="99" placeholder="0">
+        <span style="font-size:13px;color:#666;">名</span>
+      </div>
+      <div class="err" id="e-br-min">不足時間を入力してください</div>
+      <div class="lbl" style="margin-bottom:6px;">病棟や他部署からの応援</div>
+      <div class="chips">
+        <div class="chip" id="sup-yes">あり</div>
+        <div class="chip" id="sup-no">なし</div>
+      </div>
+      <div class="err" id="e-support">応援の有無を選択してください</div>
+      <div id="sup-reason-wrap" style="display:none;margin-top:8px;">
+        <div class="lbl" style="margin-bottom:4px;">応援なしの理由（任意）</div>
+        <input type="text" id="sup-reason" placeholder="例：病棟も人手不足のため">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-head"><h2>コミュニケーション・患者対応</h2></div>
+  <div class="field">
+    <div class="lbl">評価<span class="req">*</span></div>
+    <div style="display:flex;gap:8px;">
+      <div class="sbtn good" id="c-good">😊 良好</div>
+      <div class="sbtn normal" id="c-normal">😐 普通</div>
+      <div class="sbtn bad" id="c-bad">😔 課題あり</div>
+    </div>
+    <div class="err" id="e-comm">評価を選択してください</div>
+  </div>
+  <div class="field" id="comm-positive" style="display:none;">
+    <div class="lbl">よかったこと <span style="font-size:11px;color:#888;font-weight:400;">（任意）</span></div>
+    <div class="chips" style="margin-bottom:8px;">
+      <div class="mchip" id="pf-team">チームワーク</div>
+      <div class="mchip" id="pf-comm">声かけ</div>
+      <div class="mchip" id="pf-care">患者対応</div>
+      <div class="mchip" id="pf-speed">迅速な対応</div>
+      <div class="mchip" id="pf-other2">その他</div>
+    </div>
+    <textarea id="pf-note" placeholder="具体的によかった場面やスタッフへのコメントなど" style="min-height:60px;"></textarea>
+  </div>
+  <div class="field" id="comm-detail" style="display:none;">
+    <div class="lbl">対象とコメント<span class="req">*</span></div>
+    <div id="comm-con"></div>
+    <button class="add-btn" id="btn-add-comm">＋ 対象・コメントを追加</button>
+    <div class="err" id="e-comm-n">全ての対象にコメントを入力してください</div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+    <h2 style="white-space:nowrap;">気になった症例</h2>
+    <span style="font-size:11px;color:#b45309;background:#fff8e1;border:1px solid #f5a623;border-radius:6px;padding:3px 8px;line-height:1.4;">⚠️ 氏名・生年月日など個人を特定できる情報は入力しないでください</span>
+  </div>
+  <div class="field">
+    <div class="lbl">症例の有無<span class="req">*</span></div>
+    <div class="chips">
+      <div class="chip" id="cp-yes">あり</div>
+      <div class="chip" id="cp-no">なし</div>
+    </div>
+    <div class="err" id="e-cp">症例の有無を選択してください</div>
+  </div>
+  <div id="cases-wrap" style="display:none;">
+    <div class="field" id="cases-con"></div>
+    <div class="field"><button class="add-btn" id="btn-add-case">＋ 症例を追加</button></div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-head"><h2>共有したいこと</h2></div>
+  <div class="field">
+    <div class="lbl">フリーコメント（任意）</div>
+    <textarea id="free" placeholder="チームで共有したいこと" style="min-height:80px;"></textarea>
+  </div>
+</div>
+
+<div class="section">
+  <div class="sec-head"><h2>入力者</h2></div>
+  <div class="field">
+    <div class="lbl">名前<span class="req">*</span></div>
+    <input type="text" id="author" placeholder="例：山田 太郎">
+    <div class="err" id="e-author">名前を入力してください</div>
+  </div>
+</div>
+
+<button class="save-btn" id="btn-save">振り返りを保存</button>
+<button class="hist-btn" id="btn-hist">📋 過去の記録を見る</button>
+<button class="exp-btn" id="btn-exp">📥 CSVエクスポート</button>
+
+<div class="cfmbg" id="m-done">
+  <div class="cfm">
+    <p>保存しました。<br>終了しますか？</p>
+    <div class="cfm-btns">
+      <button class="b-cfm-c" id="btn-continue">続けて入力</button>
+      <button class="b-cfm-bl" id="btn-exit">終了</button>
+    </div>
+  </div>
+</div>
+
+<div class="mbg" id="m-hist">
+  <div class="modal">
+    <div class="mhead"><h3>過去の記録</h3><button class="mcls" id="btn-close-hist">×</button></div>
+    <div class="mbody" id="m-hist-body"></div>
+  </div>
+</div>
+
+<div class="mbg" id="m-detail">
+  <div class="modal">
+    <div class="mhead"><h3 id="m-detail-title">記録の詳細</h3><button class="mcls" id="btn-close-detail">×</button></div>
+    <div class="mbody" id="m-detail-body"></div>
+  </div>
+</div>
+
+<div class="cfmbg" id="m-cfm">
+  <div class="cfm">
+    <p>この記録を削除しますか？<br>この操作は取り消せません。</p>
+    <div class="cfm-btns">
+      <button class="b-cfm-c" id="btn-cfm-cancel">キャンセル</button>
+      <button class="b-cfm-d" id="btn-cfm-del">削除する</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var today=new Date();
+var shift='',breakS='',commS='',caseP='',staffS='',supportS='';
+var caseN=0,commN=0,delIdx=null,editIdx=null;
+
+function fmtD(d){return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日（'+'日月火水木金土'[d.getDay()]+'）';}
+function fmtT(d){return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+document.getElementById('hdate').textContent=fmtD(today);
+
+function ge(id){return document.getElementById(id);}
+function noErr(id){ge(id).style.display='none';}
+function showErr(id){ge(id).style.display='block';}
+function tap(el,fn){el.addEventListener('touchend',function(e){e.preventDefault();fn();});el.addEventListener('click',fn);}
+
+// 固定ボタン
+tap(ge('s-day'),function(){selShift('day');});
+tap(ge('s-night'),function(){selShift('night');});
+tap(ge('st-enough'),function(){selStaff('enough');});
+tap(ge('st-normal'),function(){selStaff('normal');});
+tap(ge('st-short'),function(){selStaff('short');});
+tap(ge('br-ok'),function(){selBreak('ok');});
+tap(ge('br-ng'),function(){selBreak('ng');});
+tap(ge('sup-yes'),function(){selSupport('yes');});
+tap(ge('sup-no'),function(){selSupport('no');});
+tap(ge('c-good'),function(){selComm('good');});
+tap(ge('c-normal'),function(){selComm('normal');});
+tap(ge('c-bad'),function(){selComm('bad');});
+tap(ge('cp-yes'),function(){selCaseP('yes');});
+tap(ge('cp-no'),function(){selCaseP('no');});
+['pf-team','pf-comm','pf-care','pf-speed','pf-other2'].forEach(function(id){
+  tap(ge(id),function(){ge(id).classList.toggle('sel');});
+});
+tap(ge('btn-add-comm'),function(){addComm();});
+tap(ge('btn-add-case'),function(){addCase();});
+tap(ge('btn-save'),function(){save();});
+tap(ge('btn-hist'),function(){openHist();});
+tap(ge('btn-exp'),function(){exportCSV();});
+tap(ge('btn-continue'),function(){ge('m-done').classList.remove('open');});
+tap(ge('btn-exit'),function(){window.close();});
+tap(ge('btn-close-hist'),function(){closeHist();});
+tap(ge('btn-close-detail'),function(){closeDetail();});
+tap(ge('btn-cfm-cancel'),function(){closeCfm();});
+tap(ge('btn-cfm-del'),function(){doDelete();});
+
+function selShift(v){
+  shift=v;
+  ge('s-day').classList.toggle('sel',v==='day');
+  ge('s-night').classList.toggle('sel',v==='night');
+  noErr('e-shift');
+}
+function selStaff(v){
+  staffS=v;
+  ['enough','normal','short'].forEach(function(k){ge('st-'+k).classList.toggle('sel',k===v);});
+  noErr('e-nurse');
+}
+function selBreak(v){
+  breakS=v;
+  ge('br-ok').classList.toggle('sel',v==='ok');
+  ge('br-ng').classList.toggle('sel',v==='ng');
+  ge('br-detail').style.display=v==='ng'?'block':'none';
+  noErr('e-break');
+}
+function selSupport(v){
+  supportS=v;
+  ge('sup-yes').classList.toggle('sel',v==='yes');
+  ge('sup-no').classList.toggle('sel',v==='no');
+  ge('sup-reason-wrap').style.display=v==='no'?'block':'none';
+  noErr('e-support');
+}
+function selComm(v){
+  commS=v;
+  ['good','normal','bad'].forEach(function(k){ge('c-'+k).classList.toggle('sel',k===v);});
+  ge('comm-positive').style.display=(v==='good'||v==='normal')?'block':'none';
+  ge('comm-detail').style.display=v==='bad'?'block':'none';
+  noErr('e-comm');
+  if(v==='bad'){if(!ge('comm-con').children.length)addComm();}
+  else{ge('comm-con').innerHTML='';commN=0;}
+}
+function selCaseP(v){
+  caseP=v;
+  ge('cp-yes').classList.toggle('sel',v==='yes');
+  ge('cp-no').classList.toggle('sel',v==='no');
+  ge('cases-wrap').style.display=v==='yes'?'block':'none';
+  noErr('e-cp');
+  if(v==='yes'&&!document.querySelectorAll('.case-card').length)addCase();
+  if(v==='no'){ge('cases-con').innerHTML='';caseN=0;}
+}
+
+function reindexComm(){
+  var blocks=ge('comm-con').querySelectorAll('.comm-block');
+  for(var i=0;i<blocks.length;i++){
+    var l=blocks[i].querySelector('.clbl');
+    if(l)l.textContent='対象 '+(i+1);
+  }
+}
+
+function addComm(){
+  commN++;
+  var n=commN;
+  var d=document.createElement('div');
+  d.id='cn-'+n;d.className='comm-block';
+  d.style.cssText='background:#fff;border:1px solid #e0e7ef;border-radius:10px;padding:12px;margin-bottom:8px;position:relative;';
+
+  var lbl=document.createElement('div');lbl.className='clbl';lbl.textContent='対象 1';d.appendChild(lbl);
+
+  var rm=document.createElement('button');rm.className='rm';rm.textContent='×';
+  rm.addEventListener('touchend',function(e){e.preventDefault();d.remove();reindexComm();});
+  rm.addEventListener('click',function(){d.remove();reindexComm();});
+  d.appendChild(rm);
+
+  var tl=document.createElement('div');tl.className='lbl';tl.style.marginBottom='6px';tl.textContent='対象';d.appendChild(tl);
+
+  var cw=document.createElement('div');cw.className='chips';cw.style.marginBottom='10px';
+  ['看護師','医師','患者','その他'].forEach(function(label){
+    var c=document.createElement('div');c.className='mchip';c.textContent=label;
+    c.addEventListener('touchend',function(e){e.preventDefault();c.classList.toggle('sel');});
+    c.addEventListener('click',function(){c.classList.toggle('sel');});
+    cw.appendChild(c);
+  });
+  d.appendChild(cw);
+
+  var cl=document.createElement('div');cl.className='lbl';cl.style.marginBottom='4px';cl.textContent='コメント';
+  var rq=document.createElement('span');rq.className='req';rq.textContent='*';cl.appendChild(rq);d.appendChild(cl);
+
+  var ta=document.createElement('textarea');ta.id='ct-'+n;ta.placeholder='具体的な状況や内容を入力してください';ta.style.minHeight='60px';d.appendChild(ta);
+
+  ge('comm-con').appendChild(d);reindexComm();noErr('e-comm-n');
+}
+
+function getCommNotes(){
+  var blocks=ge('comm-con').querySelectorAll('.comm-block'),result=[];
+  for(var i=0;i<blocks.length;i++){
+    var chips=blocks[i].querySelectorAll('.mchip.sel'),targets=[];
+    for(var j=0;j<chips.length;j++)targets.push(chips[j].textContent);
+    var ta=blocks[i].querySelector('textarea'),note=ta?ta.value:'';
+    if(targets.length||note)result.push({targets:targets.join('・'),note:note});
+  }
+  return result;
+}
+
+function addCase(){
+  caseN++;var n=caseN;
+  var d=document.createElement('div');d.className='case-card';d.id='cc-'+n;
+
+  var lbl=document.createElement('div');lbl.className='clbl';lbl.textContent='症例 '+n;d.appendChild(lbl);
+
+  var rm=document.createElement('button');rm.className='rm';rm.textContent='×';
+  rm.addEventListener('touchend',function(e){e.preventDefault();d.remove();});
+  rm.addEventListener('click',function(){d.remove();});
+  d.appendChild(rm);
+
+  var tl=document.createElement('div');tl.className='lbl';tl.style.marginBottom='6px';tl.textContent='搬送区分';
+  var r1=document.createElement('span');r1.className='req';r1.textContent='*';tl.appendChild(r1);d.appendChild(tl);
+
+  var tc=document.createElement('div');tc.className='chips';tc.style.marginBottom='10px';
+  var trMap=[['a','🚑 救急車'],['w','🚶 ウォークイン'],['o','その他']];
+  trMap.forEach(function(pair){
+    var k=pair[0],label=pair[1];
+    var c=document.createElement('div');c.className='chip';c.id='c'+k+'-'+n;c.textContent=label;
+    function sel(){trMap.forEach(function(p){var el=document.getElementById('c'+p[0]+'-'+n);if(el)el.classList.toggle('sel',p[0]===k);});}
+    c.addEventListener('touchend',function(e){e.preventDefault();sel();});
+    c.addEventListener('click',sel);
+    tc.appendChild(c);
+  });
+  d.appendChild(tc);
+
+  var il=document.createElement('div');il.className='lbl';il.style.marginBottom='4px';il.textContent='患者ID';d.appendChild(il);
+  var ii=document.createElement('input');ii.type='text';ii.id='ci-'+n;ii.placeholder='例：123456';ii.style.marginBottom='10px';d.appendChild(ii);
+
+  var nl=document.createElement('div');nl.className='lbl';nl.style.marginBottom='4px';nl.textContent='気になった内容';
+  var r2=document.createElement('span');r2.className='req';r2.textContent='*';nl.appendChild(r2);d.appendChild(nl);
+
+  var ta=document.createElement('textarea');ta.id='cn2-'+n;ta.placeholder='疾患、対応、気づいたことなど';d.appendChild(ta);
+  ge('cases-con').appendChild(d);
+}
+
+function getCases(){
+  var cards=document.querySelectorAll('.case-card'),result=[];
+  for(var i=0;i<cards.length;i++){
+    var id=cards[i].id.replace('cc-','');
+    var ea=document.getElementById('ca-'+id),ew=document.getElementById('cw-'+id),eo=document.getElementById('co-'+id);
+    result.push({
+      transport:ea&&ea.classList.contains('sel')?'救急車':ew&&ew.classList.contains('sel')?'ウォークイン':eo&&eo.classList.contains('sel')?'その他':'',
+      patientId:(ge('ci-'+id)||{value:''}).value,
+      note:(ge('cn2-'+id)||{value:''}).value
+    });
+  }
+  return result;
+}
+
+function validate(){
+  var ok=true;
+  if(!shift){showErr('e-shift');ok=false;}else noErr('e-shift');
+  var nc=ge('nurse-n').value;
+  if(!nc||+nc<1||!staffS){showErr('e-nurse');ok=false;}else noErr('e-nurse');
+  if(!breakS){showErr('e-break');ok=false;}else noErr('e-break');
+  if(breakS==='ng'){
+    if(!ge('br-min').value||+ge('br-min').value<10){showErr('e-br-min');ok=false;}else noErr('e-br-min');
+    if(!supportS){showErr('e-support');ok=false;}else noErr('e-support');
+  }
+  if(!commS){showErr('e-comm');ok=false;}else noErr('e-comm');
+  if(commS==='bad'){
+    var notes=getCommNotes(),allOk=notes.length>0;
+    for(var i=0;i<notes.length;i++){if(!notes[i].note.trim()){allOk=false;break;}}
+    if(!allOk){showErr('e-comm-n');ok=false;}else noErr('e-comm-n');
+  }else noErr('e-comm-n');
+  if(!caseP){showErr('e-cp');ok=false;}else noErr('e-cp');
+  if(caseP==='yes'){
+    var cs=getCases();
+    for(var j=0;j<cs.length;j++){if(!cs[j].transport||!cs[j].note){showToast('症例の搬送区分と内容を入力してください',true);ok=false;break;}}
+  }
+  if(!ge('author').value.trim()){showErr('e-author');ok=false;}else noErr('e-author');
+  return ok;
+}
+
+function getRecs(){return JSON.parse(localStorage.getItem('nr')||'[]');}
+function setRecs(r){localStorage.setItem('nr',JSON.stringify(r));}
+
+function save(){
+  if(!validate()){showToast('未入力の項目があります',true);return;}
+  var now=new Date(),sLbl=staffS==='enough'?'十分':staffS==='normal'?'普通':'不足';
+  var pfIds=['team','comm','care','speed','other2'],pfTags=[];
+  pfIds.forEach(function(k){var el=ge('pf-'+k);if(el&&el.classList.contains('sel'))pfTags.push(el.textContent);});
+  var rec={
+    date:fmtD(now),time:fmtT(now),ts:now.toISOString(),
+    author:ge('author').value.trim(),
+    shift:shift==='day'?'日勤':'夜勤',
+    nurseN:ge('nurse-n').value,staffLbl:sLbl,
+    breakS:breakS==='ok'?'確保できた':'できなかった',
+    brMin:breakS==='ng'?ge('br-min').value:'',
+    brStaff:breakS==='ng'?ge('br-staff').value:'',
+    supportS:breakS==='ng'?(supportS==='yes'?'あり':'なし'):'',
+    supReason:breakS==='ng'&&supportS==='no'?ge('sup-reason').value:'',
+    commS:commS==='good'?'良好':commS==='normal'?'普通':'課題あり',
+    pfTags:pfTags,pfNote:ge('pf-note').value,
+    commNotes:getCommNotes(),
+    caseP:caseP,cases:caseP==='yes'?getCases():[],
+    free:ge('free').value
+  };
+  var recs=getRecs();
+  if(editIdx!==null){recs[editIdx]=rec;editIdx=null;}else recs.unshift(rec);
+  setRecs(recs);
+  ge('m-done').classList.add('open');
+}
+
+function buildHist(){
+  var recs=getRecs(),body=ge('m-hist-body'),html='';
+  if(!recs.length){body.innerHTML='<p style="color:#888;font-size:13px;padding:8px;">記録がまだありません</p>';return;}
+  for(var i=0;i<recs.length;i++){
+    var r=recs[i];
+    html+='<div class="hi" data-idx="'+i+'">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;">'
+      +'<div class="hi-date">'+r.date+' '+(r.time||'')+' <span class="badge '+(r.shift==='日勤'?'b-am':'b-bl')+'">'+r.shift+'</span></div>'
+      +'<span style="font-size:11px;color:#aaa;">詳細 ›</span></div>'
+      +'<div class="hi-meta">入力者：'+(r.author||'—')+' ／ 看護師 '+r.nurseN+'名（'+r.staffLbl+'）</div>'
+      +'<div class="hi-meta">休憩：'+r.breakS+(r.brMin?'（'+r.brMin+'分不足）':'')+' ／ コミュニケーション：'+r.commS+'</div>'
+      +'</div>';
+  }
+  body.innerHTML=html;
+  var items=body.querySelectorAll('.hi');
+  for(var j=0;j<items.length;j++){
+    (function(el,idx){
+      el.addEventListener('touchend',function(e){e.preventDefault();openDetail(idx);});
+      el.addEventListener('click',function(){openDetail(idx);});
+    })(items[j],parseInt(items[j].getAttribute('data-idx')));
+  }
+}
+function openHist(){buildHist();ge('m-hist').classList.add('open');}
+function closeHist(){ge('m-hist').classList.remove('open');}
+
+function openDetail(idx){
+  var r=getRecs()[idx];
+  ge('m-detail-title').textContent=r.date+' '+(r.time||'');
+  var cb=r.commS==='良好'?'b-gn':r.commS==='課題あり'?'b-rd':'b-gy';
+  var pfHtml='';
+  if((r.pfTags&&r.pfTags.length)||r.pfNote){
+    pfHtml='<div style="background:#f0faf4;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">'
+      +'<div style="font-size:11px;color:#1e7e34;font-weight:600;margin-bottom:4px;">よかったこと</div>';
+    if(r.pfTags){for(var t=0;t<r.pfTags.length;t++)pfHtml+='<span class="badge b-gn">'+r.pfTags[t]+'</span>';}
+    if(r.pfNote)pfHtml+='<div style="margin-top:4px;">'+r.pfNote+'</div>';
+    pfHtml+='</div>';
+  }
+  var cnHtml='';
+  if(r.commS==='課題あり'&&r.commNotes&&r.commNotes.length){
+    for(var ci=0;ci<r.commNotes.length;ci++){
+      var n=r.commNotes[ci];
+      cnHtml+='<div style="background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">'
+        +'<span class="badge b-bl">'+(n.targets||'対象未選択')+'</span>'
+        +(n.note?'<div style="margin-top:4px;">'+n.note+'</div>':'')+'</div>';
+    }
+  }
+  var csHtml='';
+  if(r.caseP==='no'){csHtml='<span style="color:#888;font-size:13px;">なし</span>';}
+  else{
+    for(var si=0;si<r.cases.length;si++){
+      var c=r.cases[si];
+      csHtml+='<div style="background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">'
+        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">'
+        +'<span style="font-weight:600;color:#1a5fa8;">症例'+(si+1)+'</span>'
+        +(c.transport?'<span class="badge b-bl">'+c.transport+'</span>':'')
+        +(c.patientId?'<span style="color:#888;">ID: '+c.patientId+'</span>':'')
+        +'</div>'+(c.note?'<div>'+c.note+'</div>':'')+'</div>';
+    }
+  }
+  var html='<div class="ds"><div class="dst">基本情報</div>'
+    +'<div class="dr"><span class="dl">入力者</span><span class="dv">'+(r.author||'—')+'</span></div>'
+    +'<div class="dr"><span class="dl">勤務区分</span><span class="dv">'+r.shift+'</span></div>'
+    +'<div class="dr"><span class="dl">看護師人数</span><span class="dv">'+r.nurseN+'名（'+r.staffLbl+'）</span></div>'
+    +'<div class="dr"><span class="dl">休憩確保</span><span class="dv">'+r.breakS+(r.brMin?' ('+r.brMin+'分不足'+(r.brStaff?' / '+r.brStaff+'名':'')+')':'')+'</span></div>'
+    +(r.supportS?'<div class="dr"><span class="dl">病棟・他部署応援</span><span class="dv">'+r.supportS+(r.supReason?' / '+r.supReason:'')+'</span></div>':'')
+    +'</div>'
+    +'<div class="ds"><div class="dst">コミュニケーション・患者対応</div>'
+    +'<div class="dr"><span class="dl">評価</span><span class="dv"><span class="badge '+cb+'">'+r.commS+'</span></span></div>'
+    +pfHtml+cnHtml+'</div>'
+    +'<div class="ds"><div class="dst">気になった症例</div>'+csHtml+'</div>'
+    +(r.free?'<div class="ds"><div class="dst">共有したいこと</div><div style="font-size:13px;">'+r.free+'</div></div>':'')
+    +'<div class="btn-row">'
+    +'<button class="b-edit" id="det-edit-'+idx+'">✏️ 編集する</button>'
+    +'<button class="b-del" id="det-del-'+idx+'">🗑 削除する</button>'
+    +'</div>';
+  ge('m-detail-body').innerHTML=html;
+  var editBtn=ge('det-edit-'+idx),delBtn=ge('det-del-'+idx);
+  editBtn.addEventListener('touchend',function(e){e.preventDefault();startEdit(idx);});
+  editBtn.addEventListener('click',function(){startEdit(idx);});
+  delBtn.addEventListener('touchend',function(e){e.preventDefault();askDel(idx);});
+  delBtn.addEventListener('click',function(){askDel(idx);});
+  ge('m-detail').classList.add('open');
+}
+function closeDetail(){ge('m-detail').classList.remove('open');}
+
+function startEdit(idx){
+  var r=getRecs()[idx];editIdx=idx;closeDetail();closeHist();
+  selShift(r.shift==='日勤'?'day':'night');
+  ge('nurse-n').value=r.nurseN||'';
+  selStaff(r.staffLbl==='十分'?'enough':r.staffLbl==='普通'?'normal':'short');
+  selBreak(r.breakS==='確保できた'?'ok':'ng');
+  if(r.brMin)ge('br-min').value=r.brMin;
+  if(r.brStaff)ge('br-staff').value=r.brStaff;
+  if(r.supportS)selSupport(r.supportS==='あり'?'yes':'no');
+  if(r.supReason)ge('sup-reason').value=r.supReason;
+  selComm(r.commS==='良好'?'good':r.commS==='普通'?'normal':'bad');
+  ['team','comm','care','speed','other2'].forEach(function(k){
+    var el=ge('pf-'+k);if(el)el.classList.toggle('sel',(r.pfTags||[]).indexOf(el.textContent)>=0);
+  });
+  if(ge('pf-note'))ge('pf-note').value=r.pfNote||'';
+  ge('comm-con').innerHTML='';commN=0;
+  if(r.commNotes){r.commNotes.forEach(function(n){
+    addComm();
+    var b=ge('cn-'+commN);
+    if(b)b.querySelectorAll('.mchip').forEach(function(c){if(n.targets&&n.targets.indexOf(c.textContent)>=0)c.classList.add('sel');});
+    var ta=ge('ct-'+commN);if(ta)ta.value=n.note||'';
+  });}
+  selCaseP(r.caseP||'no');ge('cases-con').innerHTML='';caseN=0;
+  if(r.cases){r.cases.forEach(function(c){
+    addCase();
+    var v=c.transport==='救急車'?'a':c.transport==='ウォークイン'?'w':'o';
+    ['a','w','o'].forEach(function(k){var el=document.getElementById('c'+k+'-'+caseN);if(el)el.classList.toggle('sel',k===v);});
+    var pi=ge('ci-'+caseN);if(pi)pi.value=c.patientId||'';
+    var cn=ge('cn2-'+caseN);if(cn)cn.value=c.note||'';
+  });}
+  ge('free').value=r.free||'';ge('author').value=r.author||'';
+  window.scrollTo({top:0,behavior:'smooth'});
+  showToast('編集モードです。修正後に保存してください');
+}
+
+function askDel(idx){delIdx=idx;ge('m-cfm').classList.add('open');}
+function closeCfm(){delIdx=null;ge('m-cfm').classList.remove('open');}
+function doDelete(){
+  if(delIdx===null)return;
+  var recs=getRecs();recs.splice(delIdx,1);setRecs(recs);
+  closeCfm();closeDetail();showToast('削除しました');openHist();
+}
+
+function exportCSV(){
+  var recs=getRecs();
+  if(!recs.length){showToast('保存されたデータがありません',true);return;}
+  var mc=0,cc=0;
+  for(var i=0;i<recs.length;i++){
+    if((recs[i].commNotes||[]).length>mc)mc=(recs[i].commNotes||[]).length;
+    if((recs[i].cases||[]).length>cc)cc=(recs[i].cases||[]).length;
+  }
+  var hd=['日付','時刻','入力者','勤務区分','看護師人数','配置状況','休憩確保','休憩不足(分)','かけた人数','病棟・他部署応援','応援なし理由'];
+  for(var c=1;c<=mc;c++)hd.push('対象'+c,'コメント'+c);
+  hd.push('よかったこと(タグ)','よかったことコメント','共有コメント','症例有無');
+  for(var k=1;k<=cc;k++)hd.push('症例'+k+'_搬送区分','症例'+k+'_患者ID','症例'+k+'_内容');
+  var rows=[hd.join(',')];
+  for(var ri=0;ri<recs.length;ri++){
+    var r=recs[ri];
+    var row=[r.date,r.time||'',r.author||'',r.shift,r.nurseN,r.staffLbl,r.breakS,r.brMin||'',r.brStaff||'',r.supportS||'',r.supReason||''];
+    for(var ci=0;ci<mc;ci++){var cn=r.commNotes&&r.commNotes[ci];row.push(cn?cn.targets:'',cn?cn.note:'');}
+    row.push((r.pfTags||[]).join('・'),r.pfNote||'',r.free||'',r.caseP==='no'?'なし':'あり');
+    for(var si=0;si<cc;si++){var cs=r.cases&&r.cases[si];row.push(cs?cs.transport:'',cs?cs.patientId:'',cs?cs.note:'');}
+    rows.push(row.map(function(v){return '"'+String(v||'').replace(/"/g,'""')+'"';}).join(','));
+  }
+  var csv='\uFEFF'+rows.join('\n');
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download='振り返り_'+today.toISOString().slice(0,10)+'.csv';
+  a.click();showToast('CSVをダウンロードしました');
+}
+
+function showToast(msg,isErr){
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:'+(isErr?'#c0392b':'#1a1a1a')+';color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;white-space:nowrap;z-index:300;';
+  t.textContent=msg;document.body.appendChild(t);
+  setTimeout(function(){t.remove();},2500);
+}
+</script>
+</body>
+</html>
