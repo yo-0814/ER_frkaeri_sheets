@@ -272,7 +272,6 @@ textarea{width:100%;padding:9px 10px;border:1px solid #d0d7e0;border-radius:8px;
 </div>
 
 <script>
-var GAS_URL='https://script.google.com/macros/s/AKfycbxYh7WyDmYOdKi6rScK2XlnHedwZmQo3lk7ICeYS3llGvQKdN5vt7NHH601Yq_SkTzW/exec';
 var today=new Date();
 var shift='',breakS='',commS='',caseP='',staffS='',supportS='';
 var caseN=0,commN=0,delIdx=null,editIdx=null;
@@ -510,12 +509,6 @@ function doSave(){
   var recs=getRecs();
   if(editIdx!==null){recs[editIdx]=rec;editIdx=null;}else recs.unshift(rec);
   setRecs(recs);
-  fetch(GAS_URL,{
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(rec)
-  }).catch(function(){});
   ge('m-done').classList.add('open');
 }
 
