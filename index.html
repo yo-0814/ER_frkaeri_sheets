@@ -1,1399 +1,1778 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>振り返りシート</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>浦添ER 振り返り共有シート</title>
+<!-- Tailwind CDN: 本番用警告を抑制（プロトタイプ用途） -->
+<script>
+  // Tailwindの本番警告を無効化
+  const originalWarn = console.warn;
+  console.warn = function(...args) {
+    if (args[0] && String(args[0]).includes('cdn.tailwindcss.com')) return;
+    originalWarn.apply(console, args);
+  };
+</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;background:#f2f4f7;color:#1a1a1a;min-height:100vh;padding-bottom:48px;}
-header{background:#1a5fa8;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:10;}
-header h1{font-size:16px;font-weight:600;}
-header p{font-size:12px;opacity:.8;margin-top:2px;}
-.edit-banner{background:#fff8e1;color:#856404;padding:10px 16px;font-size:13px;font-weight:500;border-bottom:1px solid #f5a623;display:none;position:sticky;top:52px;z-index:9;align-items:center;justify-content:space-between;}
-.edit-banner.show{display:flex;}
-.edit-banner button{background:none;border:1px solid #856404;color:#856404;padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;}
-.section{background:#fff;margin:12px;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);}
-.sec-head{background:#f7f9fc;padding:10px 14px;border-bottom:1px solid #e8edf2;}
-.sec-head h2{font-size:13px;font-weight:600;color:#1a5fa8;}
-.field{padding:12px 14px;border-bottom:1px solid #f0f0f0;}
-.field:last-child{border-bottom:none;}
-.lbl{font-size:12px;color:#666;margin-bottom:6px;font-weight:500;}
-.req{color:#e53e3e;margin-left:2px;}
-.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
-input[type=number]{width:68px;padding:8px 6px;border:1px solid #d0d7e0;border-radius:8px;font-size:15px;text-align:center;-webkit-appearance:none;appearance:none;}
-input[type=text],input[type=password]{width:100%;padding:9px 10px;border:1px solid #d0d7e0;border-radius:8px;font-size:14px;font-family:inherit;}
-textarea{width:100%;padding:9px 10px;border:1px solid #d0d7e0;border-radius:8px;font-size:14px;resize:vertical;min-height:72px;font-family:inherit;line-height:1.5;}
-.chips{display:flex;gap:6px;flex-wrap:wrap;}
-.chip,.mchip,.sch,.sbtn{cursor:pointer;-webkit-tap-highlight-color:transparent;user-select:none;touch-action:manipulation;}
-.chip{padding:0 16px;border-radius:99px;border:1px solid #d0d7e0;font-size:13px;color:#555;background:#fff;height:44px;display:inline-flex;align-items:center;justify-content:center;}
-.chip.sel{background:#1a5fa8;color:#fff;border-color:#1a5fa8;}
-.mchip{padding:0 14px;border-radius:99px;border:1px solid #d0d7e0;font-size:13px;color:#555;background:#fff;height:44px;display:inline-flex;align-items:center;justify-content:center;}
-.mchip.sel{background:#e8f0fb;color:#1a5fa8;border-color:#1a5fa8;}
-.shift-wrap{display:flex;gap:8px;}
-.sch{flex:1;border-radius:10px;border:1px solid #d0d7e0;font-size:14px;font-weight:500;background:#fff;color:#555;height:48px;display:flex;align-items:center;justify-content:center;}
-.sch.day.sel{background:#fff8e1;color:#856404;border-color:#f5a623;}
-.sch.night.sel{background:#e8f0fb;color:#1a5fa8;border-color:#1a5fa8;}
-.sbtn{flex:1;border-radius:8px;border:1px solid #d0d7e0;font-size:13px;font-weight:500;background:#fff;color:#555;height:44px;display:flex;align-items:center;justify-content:center;}
-.sbtn.good.sel{background:#e6f4ea;color:#1e7e34;border-color:#1e7e34;}
-.sbtn.normal.sel{background:#fff8e1;color:#856404;border-color:#f5a623;}
-.sbtn.bad.sel{background:#fde8e8;color:#b91c1c;border-color:#e53e3e;}
-.sub{background:#f7f9fc;border-radius:8px;padding:10px 12px;margin-top:8px;}
-.card{background:#f7f9fc;border:1px solid #e0e7ef;border-radius:10px;padding:12px;margin-bottom:10px;position:relative;}
-.card-wh{background:#fff;}
-.clbl{font-size:11px;font-weight:600;color:#1a5fa8;margin-bottom:8px;}
-.rm{position:absolute;top:8px;right:8px;background:none;border:none;color:#aaa;font-size:20px;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
-.add-btn{width:100%;border:1.5px dashed #a0b4cc;border-radius:10px;background:#f0f5fb;color:#1a5fa8;font-size:13px;font-weight:500;cursor:pointer;height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-.save-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 24px);margin:16px 12px 8px;background:#1a5fa8;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;height:52px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-.hist-btn,.exp-btn{display:flex;align-items:center;justify-content:center;width:calc(100% - 24px);margin:0 12px 8px;border-radius:12px;font-size:14px;cursor:pointer;height:48px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
-.hist-btn{background:#fff;color:#1a5fa8;border:1.5px solid #1a5fa8;font-weight:500;}
-.exp-btn{background:#fff;color:#555;border:1px solid #d0d7e0;}
-.err{font-size:11px;color:#e53e3e;margin-top:4px;display:none;}
-.err.show{display:block;}
-.storage-warn{margin:0 12px 8px;padding:10px 12px;background:#fde8e8;color:#b91c1c;border:1px solid #e53e3e;border-radius:8px;font-size:12px;display:none;}
-.storage-warn.show{display:block;}
-.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;}
-.mbg.open{display:flex;}
-.modal{background:#fff;border-radius:16px;width:100%;max-width:480px;margin:auto;}
-.mhead{padding:14px 16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:16px 16px 0 0;z-index:1;gap:8px;}
-.mhead h3{font-size:15px;font-weight:600;flex:1;}
-.mcls{background:none;border:none;font-size:24px;color:#aaa;cursor:pointer;width:44px;height:44px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;flex-shrink:0;}
-.mbody{padding:12px 16px;}
-.hist-search{padding:8px 16px;border-bottom:1px solid #f0f0f0;}
-.hist-search input{width:100%;padding:8px 10px;border:1px solid #d0d7e0;border-radius:8px;font-size:13px;}
-.hi{padding:12px;border:1px solid #e8edf2;border-radius:10px;margin-bottom:8px;cursor:pointer;touch-action:manipulation;}
-.hi-date{font-size:13px;font-weight:600;color:#1a5fa8;}
-.hi-meta{font-size:12px;color:#888;margin-top:3px;}
-.dr{display:flex;gap:6px;margin-bottom:6px;font-size:13px;}
-.dl{color:#888;min-width:110px;flex-shrink:0;}
-.dv{color:#1a1a1a;flex:1;word-break:break-word;}
-.ds{margin-bottom:14px;}
-.dst{font-size:12px;font-weight:600;color:#1a5fa8;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e8edf2;}
-.badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500;margin-right:4px;}
-.b-bl{background:#e8f0fb;color:#1a5fa8;}
-.b-am{background:#fff8e1;color:#856404;}
-.b-gn{background:#e6f4ea;color:#1e7e34;}
-.b-rd{background:#fde8e8;color:#b91c1c;}
-.b-gy{background:#f0f0f0;color:#555;}
-.btn-row{display:flex;gap:8px;margin-top:12px;}
-.b-edit,.b-del{flex:1;height:44px;border-radius:10px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;touch-action:manipulation;}
-.b-edit{border:1.5px solid #1a5fa8;color:#1a5fa8;}
-.b-del{border:1.5px solid #e53e3e;color:#e53e3e;}
-.cfmbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center;padding:16px;}
-.cfmbg.open{display:flex;}
-.cfm{background:#fff;border-radius:14px;padding:20px;width:100%;max-width:320px;text-align:center;}
-.cfm p{font-size:14px;margin-bottom:16px;color:#333;line-height:1.6;}
-.cfm-btns{display:flex;gap:8px;}
-.cfm-btns button{flex:1;height:44px;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer;touch-action:manipulation;}
-.b-cfm-c{border:1px solid #d0d7e0;background:#fff;color:#555;}
-.b-cfm-d{border:none;background:#e53e3e;color:#fff;}
-.b-cfm-bl{border:none;background:#1a5fa8;color:#fff;}
-.empty-hist{color:#888;font-size:13px;padding:20px 8px;text-align:center;}
-/* 統計ダッシュボード */
-.stats{background:linear-gradient(135deg,#1a5fa8 0%,#2d7dd2 100%);color:#fff;border-radius:12px;padding:14px;margin-bottom:12px;}
-.stats-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.stats-title{font-size:13px;font-weight:600;opacity:.95;}
-.stats-period{font-size:11px;opacity:.8;}
-.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
-.stat-card{background:rgba(255,255,255,.15);border-radius:8px;padding:8px 10px;}
-.stat-lbl{font-size:10px;opacity:.85;margin-bottom:2px;}
-.stat-val{font-size:18px;font-weight:700;line-height:1.2;}
-.stat-sub{font-size:10px;opacity:.8;margin-top:1px;}
-.stats-bar-wrap{margin-top:10px;}
-.stats-bar-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:11px;}
-.stats-bar-lbl{min-width:40px;opacity:.85;}
-.stats-bar{flex:1;height:6px;background:rgba(255,255,255,.2);border-radius:3px;overflow:hidden;}
-.stats-bar-fill{height:100%;background:#fff;border-radius:3px;transition:width .4s;}
-.stats-bar-val{min-width:28px;text-align:right;font-weight:600;}
-.stats-empty{text-align:center;font-size:12px;opacity:.85;padding:10px 0;}
-.stats-tabs{display:flex;gap:4px;background:rgba(0,0,0,.15);border-radius:8px;padding:3px;margin-bottom:10px;}
-.stats-tab{flex:1;padding:6px 0;border-radius:6px;font-size:11px;font-weight:500;text-align:center;cursor:pointer;color:rgba(255,255,255,.75);touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;transition:background .15s,color .15s;}
-.stats-tab.sel{background:#fff;color:#1a5fa8;font-weight:600;}
-.stats-filter-note{font-size:10px;opacity:.85;margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.2);display:flex;align-items:center;gap:4px;}
-/* タグフィルタ */
-.hist-filters{padding:8px 16px 10px;border-bottom:1px solid #f0f0f0;background:#fff;}
-.filter-label{font-size:11px;color:#666;font-weight:500;margin:6px 0 4px;}
-.filter-chips{display:flex;gap:5px;flex-wrap:wrap;}
-.fchip{padding:4px 10px;border-radius:99px;border:1px solid #d0d7e0;font-size:11px;color:#555;background:#fff;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;}
-.fchip.sel{background:#1a5fa8;color:#fff;border-color:#1a5fa8;}
-.fchip.sel.f-good{background:#1e7e34;border-color:#1e7e34;}
-.fchip.sel.f-bad{background:#b91c1c;border-color:#b91c1c;}
-.fchip.sel.f-warn{background:#856404;border-color:#f5a623;}
-.filter-clear{font-size:11px;color:#1a5fa8;background:none;border:none;cursor:pointer;padding:4px 0;margin-left:auto;display:block;}
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;white-space:nowrap;z-index:300;max-width:calc(100vw - 32px);overflow:hidden;text-overflow:ellipsis;}
-.toast-n{background:#1a1a1a;}
-.toast-e{background:#c0392b;}
+  :root {
+    --navy-900: #0b1e3f;
+    --navy-800: #12284d;
+    --navy-700: #1b3a6b;
+    --navy-600: #26518f;
+    --blue-500: #2f6fb8;
+    --blue-400: #4a8dd3;
+    --accent: #3b82f6;
+    --paper: #fafbfc;
+    --line: #e3e8ef;
+    --line-strong: #cfd6e0;
+    --muted: #6b7a8f;
+    --good: #059669;
+    --mid: #d97706;
+    --bad: #dc2626;
+    --soft-warn: #fff7ed;
+    --soft-info: #eef4fb;
+    --soft-alert: #fef2f2;
+  }
+  html, body {
+    font-family: 'Noto Sans JP', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--navy-900);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .font-display { font-family: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif; letter-spacing: 0.02em; }
+  .num-tabular { font-variant-numeric: tabular-nums; }
+
+  /* Section card */
+  .card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .card-accent {
+    position: relative;
+  }
+  .card-accent::before {
+    content: "";
+    position: absolute; left: 0; top: 14px; bottom: 14px;
+    width: 3px; border-radius: 2px;
+    background: linear-gradient(180deg, var(--navy-700), var(--blue-400));
+  }
+
+  /* Input base */
+  .fld {
+    width: 100%;
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px; /* prevent iOS zoom */
+    color: var(--navy-900);
+    transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  .fld:focus {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(47,111,184,0.15);
+  }
+  textarea.fld { min-height: 76px; resize: vertical; line-height: 1.55; }
+  select.fld {
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231b3a6b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+  }
+
+  /* Pill / segmented */
+  .seg {
+    display: grid;
+    gap: 8px;
+    width: 100%;
+  }
+  .seg-2 { grid-template-columns: 1fr 1fr; }
+  .seg-3 { grid-template-columns: repeat(3, 1fr); }
+  .seg-btn {
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    color: var(--navy-900);
+    border-radius: 10px;
+    padding: 13px 8px;
+    font-weight: 600;
+    font-size: 15px;
+    letter-spacing: 0.02em;
+    transition: all .12s ease;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    user-select: none;
+    cursor: pointer;
+  }
+  .seg-btn:active { transform: scale(0.98); }
+  .seg-btn[data-selected="true"] {
+    background: var(--navy-800);
+    color: #fff;
+    border-color: var(--navy-800);
+    box-shadow: 0 4px 14px -6px rgba(11,30,63,0.4);
+  }
+  .seg-btn[data-val="良い"][data-selected="true"] {
+    background: var(--good); border-color: var(--good);
+  }
+  .seg-btn[data-val="普通"][data-selected="true"] {
+    background: var(--mid); border-color: var(--mid);
+  }
+  .seg-btn[data-val="悪い"][data-selected="true"] {
+    background: var(--bad); border-color: var(--bad);
+  }
+  .seg-btn[data-val="確保できなかった"][data-selected="true"] {
+    background: var(--bad); border-color: var(--bad);
+  }
+  .seg-btn[data-val="確保できた"][data-selected="true"] {
+    background: var(--good); border-color: var(--good);
+  }
+
+  /* Conditional blocks */
+  .cond {
+    display: none;
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 10px;
+    border: 1px dashed var(--line-strong);
+    background: var(--soft-warn);
+    animation: slideIn .2s ease;
+  }
+  .cond-info {
+    background: var(--soft-info);
+  }
+  .cond-alert {
+    background: var(--soft-alert);
+    border-color: #fecaca;
+  }
+  .cond[data-show="true"] { display: block; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Label */
+  .lbl {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy-700);
+    margin-bottom: 7px;
+    letter-spacing: 0.02em;
+  }
+  .lbl-required::after {
+    content: "※";
+    color: #dc2626;
+    margin-left: 4px;
+    font-weight: 700;
+  }
+
+  /* Section header */
+  .sec-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 4px;
+  }
+  .sec-num {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 900;
+    font-size: 11px;
+    color: var(--blue-500);
+    background: var(--soft-info);
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.1em;
+  }
+  .sec-title {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--navy-900);
+  }
+  .sec-title-required::after {
+    content: "※";
+    color: #dc2626;
+    margin-left: 4px;
+    font-weight: 700;
+  }
+  .sec-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Tabs */
+  .tab-btn {
+    flex: 1;
+    padding: 11px 8px;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 48px;
+  }
+  .tab-btn[data-active="true"] {
+    color: var(--navy-800);
+    border-bottom-color: var(--navy-800);
+  }
+
+  /* History card */
+  .hist-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    transition: border-color .15s;
+  }
+  .hist-card:hover { border-color: var(--blue-400); }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .badge-day { background: #fef3c7; color: #92400e; }
+  .badge-night { background: #1e1b4b; color: #c7d2fe; }
+
+  /* Primary button */
+  .btn-primary {
+    background: linear-gradient(180deg, var(--navy-700), var(--navy-800));
+    color: #fff;
+    font-weight: 700;
+    padding: 15px;
+    border-radius: 12px;
+    font-size: 16px;
+    letter-spacing: 0.04em;
+    box-shadow: 0 8px 20px -10px rgba(11,30,63,0.5);
+    transition: transform .1s, box-shadow .15s;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: #fff;
+    border: 1.5px solid var(--line-strong);
+    color: var(--navy-800);
+    font-weight: 600;
+    padding: 12px;
+    border-radius: 10px;
+  }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(11,30,63,0.55);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 20px;
+  }
+  .modal-backdrop[data-open="true"] { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 420px;
+    width: 100%;
+    overflow: hidden;
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(12px) scale(0.97); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* Stat tile */
+  .stat-tile {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .stat-label { font-size: 11px; color: var(--muted); letter-spacing: 0.05em; font-weight: 600; }
+  .stat-value { font-family: 'Zen Kaku Gothic New', sans-serif; font-weight: 700; font-size: 22px; color: var(--navy-800); }
+  .stat-unit { font-size: 12px; color: var(--muted); margin-left: 2px; font-weight: 500; }
+
+  /* Score bar */
+  .score-bar {
+    height: 6px; border-radius: 3px; background: var(--line);
+    overflow: hidden; position: relative;
+  }
+  .score-bar > div { height: 100%; border-radius: 3px; transition: width .4s ease; }
+
+  /* Icon */
+  .ico { stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+
+  /* Filter chips */
+  .chip {
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    color: var(--navy-700);
+    cursor: pointer;
+    transition: all .1s;
+  }
+  .chip[data-active="true"] {
+    background: var(--navy-800);
+    color: #fff;
+    border-color: var(--navy-800);
+  }
+  /* 3-value filter chips (良い/普通/悪い) */
+  .chip[data-active="true"][data-val="良い"] { background: var(--good); border-color: var(--good); }
+  .chip[data-active="true"][data-val="普通"] { background: var(--mid); border-color: var(--mid); }
+  .chip[data-active="true"][data-val="悪い"] { background: var(--bad); border-color: var(--bad); }
+  .chip-group { display: flex; gap: 8px; flex-wrap: wrap; }
+  .filter-row { margin-bottom: 14px; }
+  .filter-row:last-of-type { margin-bottom: 0; }
+
+  /* Subtle hero grid */
+  .hero {
+    background:
+      radial-gradient(circle at 100% 0%, rgba(74,141,211,0.14), transparent 45%),
+      radial-gradient(circle at 0% 100%, rgba(11,30,63,0.08), transparent 50%),
+      linear-gradient(180deg, #fff, #f3f6fa);
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-mark {
+    width: 36px; height: 36px;
+    background: var(--navy-800);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+
+  /* PIN dots */
+  .pin-dot {
+    width: 44px; height: 52px;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 700;
+    color: var(--navy-800);
+    background: #fff;
+  }
+  .pin-dot[data-filled="true"] { border-color: var(--navy-800); background: var(--soft-info); }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--navy-800); color: #fff;
+    padding: 12px 20px; border-radius: 16px;
+    font-size: 13px; font-weight: 600;
+    opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 60;
+    max-width: calc(100vw - 40px);
+    text-align: center;
+    line-height: 1.5;
+  }
+  .toast[data-show="true"] { opacity: 1; transform: translateX(-50%) translateY(-4px); }
+
+  /* Small helpers */
+  .hr-soft { height: 1px; background: var(--line); margin: 18px 0; }
+  .kbd {
+    display: inline-block; padding: 1px 6px;
+    background: var(--soft-info); color: var(--navy-700);
+    border-radius: 4px; font-size: 11px; font-weight: 600;
+  }
+
+  /* Scroll tabs */
+  .tabs-wrap {
+    position: sticky; top: 0; z-index: 40;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+
+  /* Number stepper */
+  .stepper { display: flex; align-items: stretch; border: 1.5px solid var(--line-strong); border-radius: 10px; overflow: hidden; background: #fff; width: 100%; min-height: 52px; }
+  .stepper button { flex: 0 0 42px; font-size: 20px; font-weight: 700; color: var(--navy-700); background: #fafbfc; }
+  .stepper button:active { background: var(--soft-info); }
+  .stepper input { flex: 1; min-width: 0; width: 100%; text-align: center; font-size: 17px; font-weight: 700; border: none; outline: none; color: var(--navy-900); background: #fff; padding: 0 4px; }
+  .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 </style>
 </head>
-<body>
+<body class="pb-24">
 
-<header>
-  <h1>救急外来 振り返りシート</h1>
-  <p id="hdate"></p>
+<!-- ============ HERO ============ -->
+<header class="hero px-5 pt-6 pb-5">
+  <div class="max-w-xl mx-auto">
+    <div class="flex items-center gap-3 mb-2">
+      <div class="hero-mark">
+        <svg viewBox="0 0 24 24" width="20" height="20" class="ico"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>
+      </div>
+      <div>
+        <div class="text-[10px] font-bold tracking-[0.25em] text-[var(--blue-500)]">浦添ER</div>
+        <h1 class="font-display font-bold text-[19px] leading-tight text-[var(--navy-900)]">振り返り共有シート</h1>
+      </div>
+    </div>
+  </div>
 </header>
 
-<div class="edit-banner" id="edit-banner">
-  <span>✏️ 編集モード：修正後に保存してください</span>
-  <button id="btn-cancel-edit">キャンセル</button>
-</div>
-
-<div class="storage-warn" id="storage-warn">
-  ⚠️ 保存容量が少なくなっています。古い記録のCSVエクスポート・削除をご検討ください。
-</div>
-
-<div class="section">
-  <div class="sec-head"><h2>基本情報</h2></div>
-  <div class="field">
-    <div class="lbl">勤務区分<span class="req">*</span></div>
-    <div class="shift-wrap">
-      <div class="sch day" data-shift="day">☀️ 日勤</div>
-      <div class="sch night" data-shift="night">🌙 夜勤</div>
-    </div>
-    <div class="err" id="e-shift">勤務区分を選択してください</div>
+<!-- ============ TABS ============ -->
+<div class="tabs-wrap">
+  <div class="max-w-xl mx-auto flex">
+    <button class="tab-btn" data-tab="input" data-active="true">
+      <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      入力
+    </button>
+    <button class="tab-btn" data-tab="history">
+      <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+      履歴
+    </button>
+    <button class="tab-btn" data-tab="stats">
+      <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>
+      統計
+    </button>
   </div>
-  <div class="field">
-    <div class="lbl">看護師の人数<span class="req">*</span></div>
-    <div class="row">
-      <input type="number" id="nurse-n" min="1" max="99" placeholder="0" inputmode="numeric">
-      <span style="font-size:13px;color:#666;">名</span>
-      <div class="chips" style="margin-left:4px;">
-        <div class="chip" data-staff="enough">十分</div>
-        <div class="chip" data-staff="normal">普通</div>
-        <div class="chip" data-staff="short">不足</div>
+</div>
+
+<main class="max-w-xl mx-auto px-4 pt-4 space-y-4">
+
+  <!-- =========== TAB: INPUT =========== -->
+  <section id="tab-input" class="space-y-4">
+
+    <!-- 基本情報 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">BASIC</span>
+        <div>
+          <div class="sec-title">基本情報</div>
+        </div>
+      </div>
+      <div class="hr-soft"></div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="col-span-2">
+          <label class="lbl lbl-required">日付</label>
+          <input type="date" id="f_date" class="fld num-tabular" />
+        </div>
+        <div class="col-span-2">
+          <label class="lbl lbl-required">勤務帯</label>
+          <div class="seg seg-2" data-seg-field="shift">
+            <button class="seg-btn" data-val="日勤">
+              <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              日勤
+            </button>
+            <button class="seg-btn" data-val="夜勤">
+              <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+              夜勤
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl lbl-required">看護師（人）</label>
+          <div class="stepper">
+            <button type="button" data-stp="f_nurses" data-delta="-1">−</button>
+            <input type="number" id="f_nurses" min="0" value="0" />
+            <button type="button" data-stp="f_nurses" data-delta="1">+</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl lbl-required">医師（人）</label>
+          <div class="stepper">
+            <button type="button" data-stp="f_doctors" data-delta="-1">−</button>
+            <input type="number" id="f_doctors" min="0" value="0" />
+            <button type="button" data-stp="f_doctors" data-delta="1">+</button>
+          </div>
+        </div>
+        <div class="col-span-2">
+          <label class="lbl lbl-required">記録者名</label>
+          <input type="text" id="f_reporter" class="fld" list="reporterList" autocomplete="off" />
+          <datalist id="reporterList"></datalist>
+        </div>
       </div>
     </div>
-    <div class="err" id="e-nurse">人数と配置状況を入力してください</div>
-  </div>
-  <div class="field">
-    <div class="lbl">休憩時間の確保<span class="req">*</span></div>
-    <div class="chips">
-      <div class="chip" data-break="ok">確保できた</div>
-      <div class="chip" data-break="ng">できなかった</div>
-    </div>
-    <div class="err" id="e-break">休憩状況を選択してください</div>
-    <div class="sub" id="br-detail" style="display:none;">
-      <div class="lbl" style="margin-bottom:6px;">不足時間・応援要請</div>
-      <div class="row" style="margin-bottom:8px;">
-        <input type="number" id="br-min" min="10" max="120" step="10" placeholder="0" inputmode="numeric">
-        <span style="font-size:13px;color:#666;">分不足</span>
-        <input type="number" id="br-staff" min="1" max="99" placeholder="0" inputmode="numeric">
-        <span style="font-size:13px;color:#666;">名</span>
+
+    <!-- 労働環境 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">WORKLOAD</span>
+        <div>
+          <div class="sec-title">休憩や時間外</div>
+          <div class="sec-desc">休憩確保率と応援要請の実態を蓄積します</div>
+        </div>
       </div>
-      <div class="err" id="e-br-min">不足時間を入力してください</div>
-      <div class="lbl" style="margin-bottom:6px;">病棟や他部署からの応援</div>
-      <div class="chips">
-        <div class="chip" data-support="yes">あり</div>
-        <div class="chip" data-support="no">なし</div>
+      <div class="hr-soft"></div>
+
+      <label class="lbl lbl-required">休憩の確保</label>
+      <div class="seg seg-2" data-seg-field="break_secured">
+        <button class="seg-btn" data-val="確保できた">
+          <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M20 6 9 17l-5-5"/></svg>
+          確保できた
+        </button>
+        <button class="seg-btn" data-val="確保できなかった">
+          <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+          できなかった
+        </button>
       </div>
-      <div class="err" id="e-support">応援の有無を選択してください</div>
-      <div id="sup-reason-wrap" style="display:none;margin-top:8px;">
-        <div class="lbl" style="margin-bottom:4px;">応援なしの理由（任意）</div>
-        <input type="text" id="sup-reason" placeholder="例：病棟も人手不足のため" maxlength="100">
+
+      <div class="cond" id="break_detail">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="lbl">不足時間（分）</label>
+            <div class="stepper">
+              <button type="button" data-stp="f_short_min" data-delta="-10" data-min="0">−</button>
+              <input type="number" id="f_short_min" min="0" step="10" value="0" />
+              <button type="button" data-stp="f_short_min" data-delta="10">+</button>
+            </div>
+          </div>
+          <div>
+            <label class="lbl">対象人数</label>
+            <div class="stepper">
+              <button type="button" data-stp="f_short_people" data-delta="-1">−</button>
+              <input type="number" id="f_short_people" min="0" value="1" />
+              <button type="button" data-stp="f_short_people" data-delta="1">+</button>
+            </div>
+          </div>
+          <div class="col-span-2">
+            <label class="lbl">応援要請（病棟・他部署）</label>
+            <div class="seg seg-2" data-seg-field="help_requested">
+              <button class="seg-btn" data-val="あり">あり</button>
+              <button class="seg-btn" data-val="なし">なし</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="cond cond-alert mt-3" id="help_no_reason">
+          <label class="lbl">応援を要請しなかった理由</label>
+          <textarea id="f_no_help_reason" class="fld" placeholder="例：他部署も人手不足だった／要請の時間的余裕がなかった など"></textarea>
+        </div>
       </div>
     </div>
-  </div>
-</div>
 
-<div class="section">
-  <div class="sec-head"><h2>コミュニケーション・患者対応</h2></div>
-  <div class="field">
-    <div class="lbl">評価<span class="req">*</span></div>
-    <div style="display:flex;gap:8px;">
-      <div class="sbtn good" data-comm="good">😊 良好</div>
-      <div class="sbtn normal" data-comm="normal">😐 普通</div>
-      <div class="sbtn bad" data-comm="bad">😔 課題あり</div>
+    <!-- セクション1 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 1</span>
+        <div>
+          <div class="sec-title sec-title-required">チームの状態</div>
+        </div>
+      </div>
+      <div class="hr-soft"></div>
+
+      <div class="space-y-4" id="team_ratings">
+        <div data-rate-group="team_collab">
+          <label class="lbl">① チーム連携（協力体制、情報共有、コミュニケーション、接遇など）</label>
+          <div class="seg seg-3" data-seg-field="team_collab">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+          <textarea class="fld mt-2" data-note="team_collab_note" placeholder="具体的な場面（任意）"></textarea>
+        </div>
+        <div data-rate-group="external_collab">
+          <label class="lbl">② 他関連機関との連携（他部署、他施設、消防など）</label>
+          <div class="seg seg-3" data-seg-field="external_collab">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+          <textarea class="fld mt-2" data-note="external_collab_note" placeholder="具体的な場面（任意）"></textarea>
+        </div>
+        <div data-rate-group="psych_safety">
+          <label class="lbl">③ 心理的安全性について</label>
+          <div class="seg seg-3" data-seg-field="psych_safety">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+          <textarea class="fld mt-2" data-note="psych_safety_note" placeholder="具体的な場面（任意）"></textarea>
+        </div>
+      </div>
     </div>
-    <div class="err" id="e-comm">評価を選択してください</div>
-  </div>
-  <div class="field" id="comm-positive" style="display:none;">
-    <div class="lbl">よかったこと <span style="font-size:11px;color:#888;font-weight:400;">（任意）</span></div>
-    <div class="chips" id="pf-chips" style="margin-bottom:8px;">
-      <div class="mchip" data-pf="チームワーク">チームワーク</div>
-      <div class="mchip" data-pf="声かけ">声かけ</div>
-      <div class="mchip" data-pf="患者対応">患者対応</div>
-      <div class="mchip" data-pf="迅速な対応">迅速な対応</div>
-      <div class="mchip" data-pf="その他">その他</div>
+
+    <!-- セクション2 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 2</span>
+        <div>
+          <div class="sec-title sec-title-required">患者・家族への関わり</div>
+        </div>
+      </div>
+      <div class="hr-soft"></div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="lbl">① 接遇面</label>
+          <div class="seg seg-3" data-seg-field="hospitality">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl">② 待ち時間への配慮</label>
+          <div class="seg seg-3" data-seg-field="wait_care">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl">③ 不安軽減</label>
+          <div class="seg seg-3" data-seg-field="anxiety_relief">
+            <button class="seg-btn" data-val="良い">良い</button>
+            <button class="seg-btn" data-val="普通">普通</button>
+            <button class="seg-btn" data-val="悪い">悪い</button>
+          </div>
+        </div>
+        <div>
+          <label class="lbl">フリーコメント</label>
+          <textarea id="f_patient_comment" class="fld" placeholder="気づいたこと、印象的だった対応など"></textarea>
+        </div>
+      </div>
     </div>
-    <textarea id="pf-note" placeholder="具体的によかった場面やスタッフへのコメントなど" style="min-height:60px;" maxlength="500"></textarea>
-  </div>
-  <div class="field" id="comm-detail" style="display:none;">
-    <div class="lbl">対象とコメント<span class="req">*</span></div>
-    <div id="comm-con"></div>
-    <button class="add-btn" id="btn-add-comm">＋ 対象・コメントを追加</button>
-    <div class="err" id="e-comm-n">全ての対象にコメントを入力してください</div>
-  </div>
-</div>
 
-<div class="section">
-  <div class="sec-head" style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
-    <h2 style="white-space:nowrap;">気になった症例</h2>
-    <span style="font-size:11px;color:#b45309;background:#fff8e1;border:1px solid #f5a623;border-radius:6px;padding:3px 8px;line-height:1.4;">⚠️ 氏名・生年月日など個人を特定できる情報は入力しないでください</span>
-  </div>
-  <div class="field">
-    <div class="lbl">症例の有無<span class="req">*</span></div>
-    <div class="chips">
-      <div class="chip" data-case="yes">あり</div>
-      <div class="chip" data-case="no">なし</div>
+    <!-- セクション3 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 3</span>
+        <div>
+          <div class="sec-title sec-title-required">振り返りケース</div>
+          <div class="sec-desc">印象的／学びのあった症例があれば</div>
+        </div>
+      </div>
+      <div class="hr-soft"></div>
+
+      <div class="seg seg-2" data-seg-field="case_exists">
+        <button class="seg-btn" data-val="あり">あり</button>
+        <button class="seg-btn" data-val="なし">なし</button>
+      </div>
+
+      <div class="cond" id="case_detail">
+        <div class="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200 mb-3">
+          <svg viewBox="0 0 24 24" width="18" height="18" class="ico text-amber-700 flex-shrink-0 mt-0.5"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/></svg>
+          <div class="text-[12px] text-amber-900 leading-relaxed">
+            <strong>個人が特定されないように入力してください。</strong>
+          </div>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="lbl">搬送区分</label>
+            <select id="f_case_type" class="fld">
+              <option value="">選択してください</option>
+              <option value="救急車">救急車</option>
+              <option value="ウォークイン">ウォークイン</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl">ID</label>
+            <input type="text" id="f_case_id" class="fld" placeholder="例：12345678" />
+          </div>
+          <div>
+            <label class="lbl">内容</label>
+            <textarea id="f_case_content" class="fld" placeholder="主訴・経過・学びなど"></textarea>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="err" id="e-cp">症例の有無を選択してください</div>
-  </div>
-  <div id="cases-wrap" style="display:none;">
-    <div class="field" id="cases-con"></div>
-    <div class="field"><button class="add-btn" id="btn-add-case">＋ 症例を追加</button></div>
-  </div>
-</div>
 
-<div class="section">
-  <div class="sec-head"><h2>共有したいこと</h2></div>
-  <div class="field">
-    <div class="lbl">フリーコメント（任意）</div>
-    <textarea id="free" placeholder="チームで共有したいこと" style="min-height:80px;" maxlength="1000"></textarea>
-  </div>
-</div>
-
-<div class="section">
-  <div class="sec-head"><h2>入力者</h2></div>
-  <div class="field">
-    <div class="lbl">名前<span class="req">*</span></div>
-    <input type="text" id="author" placeholder="例：山田 太郎" maxlength="30" list="author-list" autocomplete="off">
-    <datalist id="author-list"></datalist>
-    <div class="err" id="e-author">名前を入力してください</div>
-  </div>
-</div>
-
-<button class="save-btn" id="btn-save">振り返りを保存</button>
-<button class="hist-btn" id="btn-hist">📋 過去の記録を見る</button>
-<button class="exp-btn" id="btn-exp">📥 CSVエクスポート</button>
-
-<!-- 保存確認 -->
-<div class="cfmbg" id="m-save-confirm">
-  <div class="cfm">
-    <p id="save-confirm-msg">保存しますか？</p>
-    <div class="cfm-btns">
-      <button class="b-cfm-c" data-close="m-save-confirm">いいえ</button>
-      <button class="b-cfm-bl" id="btn-save-yes">はい</button>
+    <!-- セクション4 -->
+    <div class="card card-accent p-5 pl-6">
+      <div class="sec-head">
+        <span class="sec-num">SECTION 4</span>
+        <div>
+          <div class="sec-title">共有事項</div>
+          <div class="sec-desc">任意</div>
+        </div>
+      </div>
+      <div class="hr-soft"></div>
+      <textarea id="f_share" class="fld" placeholder="チームに共有したいこと、気づき、提案など"></textarea>
     </div>
-  </div>
-</div>
 
-<!-- 保存完了 -->
-<div class="cfmbg" id="m-done">
-  <div class="cfm">
-    <p>保存しました。<br>続けて別の記録を入力しますか？</p>
-    <div class="cfm-btns">
-      <button class="b-cfm-c" id="btn-stay">閉じる</button>
-      <button class="b-cfm-bl" id="btn-new">新規入力</button>
+    <!-- Save button -->
+    <button id="saveBtn" class="btn-primary w-full flex items-center justify-center gap-2">
+      <svg viewBox="0 0 24 24" width="18" height="18" class="ico"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      振り返りを保存
+    </button>
+  </section>
+
+  <!-- =========== TAB: HISTORY =========== -->
+  <section id="tab-history" class="hidden space-y-4">
+    <div class="card p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">期間</label>
+        <div class="chip-group" id="histFilter" data-filter-kind="hist" data-filter-key="days" data-mode="single">
+          <button class="chip" data-days="7" data-active="true">過去7日</button>
+          <button class="chip" data-days="30">30日</button>
+          <button class="chip" data-days="90">90日</button>
+          <button class="chip" data-days="0">全期間</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">勤務帯</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="shift" data-mode="multi">
+          <button class="chip" data-val="日勤">日勤</button>
+          <button class="chip" data-val="夜勤">夜勤</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">休憩</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="break_secured" data-mode="multi">
+          <button class="chip" data-val="確保できた">確保できた</button>
+          <button class="chip" data-val="確保できなかった">確保できなかった</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">チームの状態</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="team_state" data-mode="multi">
+          <button class="chip" data-val="良い">良い</button>
+          <button class="chip" data-val="普通">普通</button>
+          <button class="chip" data-val="悪い">悪い</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">患者家族への関わり</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="patient_care" data-mode="multi">
+          <button class="chip" data-val="良い">良い</button>
+          <button class="chip" data-val="普通">普通</button>
+          <button class="chip" data-val="悪い">悪い</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">振り返りケース</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="case_exists" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">共有事項</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="share" data-mode="multi">
+          <button class="chip" data-val="あり">記載あり</button>
+          <button class="chip" data-val="なし">記載なし</button>
+        </div>
+      </div>
+
+      <label class="lbl">フリー検索</label>
+      <input type="text" id="histFreeSearch" class="fld" placeholder="キーワード（記録者・メモ・症例内容など）" />
+
+      <button type="button" id="histClearBtn" class="btn-secondary w-full mt-3 text-[12px]">絞り込みをリセット</button>
     </div>
-  </div>
-</div>
 
-<!-- 暗証番号 -->
-<div class="cfmbg" id="m-pin">
-  <div class="cfm">
-    <p>暗証番号を入力してください</p>
-    <input type="password" id="pin-input" placeholder="" inputmode="numeric" maxlength="8" style="width:100%;padding:10px;border:1px solid #d0d7e0;border-radius:8px;font-size:18px;text-align:center;letter-spacing:8px;margin-bottom:8px;">
-    <div style="font-size:11px;color:#e53e3e;margin-bottom:12px;display:none;" id="pin-err">暗証番号が違います</div>
-    <div class="cfm-btns">
-      <button class="b-cfm-c" data-close="m-pin">キャンセル</button>
-      <button class="b-cfm-bl" id="btn-pin-ok">確認</button>
+    <div id="histList" class="space-y-3"></div>
+  </section>
+
+  <!-- =========== TAB: STATS =========== -->
+  <section id="tab-stats" class="hidden space-y-4">
+    <div class="card p-4">
+      <div class="flex items-center gap-2 mb-3">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+        <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">期間</label>
+        <div class="chip-group" id="statsFilter" data-filter-kind="stats" data-filter-key="days" data-mode="single">
+          <button class="chip" data-days="7" data-active="true">過去7日</button>
+          <button class="chip" data-days="30">30日</button>
+          <button class="chip" data-days="90">90日</button>
+          <button class="chip" data-days="0">全期間</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">勤務帯</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="shift" data-mode="multi">
+          <button class="chip" data-val="日勤">日勤</button>
+          <button class="chip" data-val="夜勤">夜勤</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">休憩</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="break_secured" data-mode="multi">
+          <button class="chip" data-val="確保できた">確保できた</button>
+          <button class="chip" data-val="確保できなかった">確保できなかった</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">チームの状態</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="team_state" data-mode="multi">
+          <button class="chip" data-val="良い">良い</button>
+          <button class="chip" data-val="普通">普通</button>
+          <button class="chip" data-val="悪い">悪い</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">患者家族への関わり</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="patient_care" data-mode="multi">
+          <button class="chip" data-val="良い">良い</button>
+          <button class="chip" data-val="普通">普通</button>
+          <button class="chip" data-val="悪い">悪い</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">振り返りケース</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="case_exists" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">共有事項</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="share" data-mode="multi">
+          <button class="chip" data-val="あり">記載あり</button>
+          <button class="chip" data-val="なし">記載なし</button>
+        </div>
+      </div>
+
+      <label class="lbl">フリー検索</label>
+      <input type="text" id="statsFreeSearch" class="fld mb-3" placeholder="キーワード（記録者・メモ・症例内容など）" />
+
+      <label class="lbl">表示項目</label>
+      <select id="statsScope" class="fld">
+        <option value="all">すべて表示</option>
+        <option value="summary">サマリーのみ</option>
+        <option value="break">休憩・労働環境のみ</option>
+        <option value="team_state">チームの状態のみ</option>
+        <option value="patient_care">患者家族への関わりのみ</option>
+      </select>
+
+      <button type="button" id="statsClearBtn" class="btn-secondary w-full mt-3 text-[12px]">絞り込みをリセット</button>
     </div>
-  </div>
-</div>
 
-<!-- 履歴 -->
-<div class="mbg" id="m-hist">
+    <div id="statsContent"></div>
+
+    <!-- CSV export -->
+    <div class="card p-5 border-dashed">
+      <div class="flex items-center gap-2 mb-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        <div class="font-display font-bold text-[15px]">データエクスポート</div>
+      </div>
+      <p class="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">全ての振り返り記録をCSV形式でダウンロードします。4桁の暗証番号の入力が必要です。</p>
+      <button id="exportBtn" class="btn-secondary w-full flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        CSVエクスポート
+      </button>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ MODAL: CONFIRM SAVE ============ -->
+<div class="modal-backdrop" id="confirmModal">
   <div class="modal">
-    <div class="mhead">
-      <h3>過去の記録 <span id="hist-count" style="font-size:12px;color:#888;font-weight:400;"></span></h3>
-      <button class="mcls" data-close="m-hist">×</button>
-    </div>
-    <div class="hist-search">
-      <input type="text" id="hist-search" placeholder="入力者・内容で検索" maxlength="50">
-    </div>
-    <div class="hist-filters">
-      <div style="display:flex;align-items:center;justify-content:space-between;">
-        <div class="filter-label" style="margin-top:0;">絞り込み</div>
-        <button class="filter-clear" id="btn-filter-clear">クリア</button>
-      </div>
-      <div class="filter-label">勤務区分</div>
-      <div class="filter-chips">
-        <div class="fchip" data-filter="shift" data-val="日勤">☀️ 日勤</div>
-        <div class="fchip" data-filter="shift" data-val="夜勤">🌙 夜勤</div>
-      </div>
-      <div class="filter-label">配置状況</div>
-      <div class="filter-chips">
-        <div class="fchip" data-filter="staff" data-val="十分">十分</div>
-        <div class="fchip" data-filter="staff" data-val="普通">普通</div>
-        <div class="fchip" data-filter="staff" data-val="不足">不足</div>
-      </div>
-      <div class="filter-label">休憩</div>
-      <div class="filter-chips">
-        <div class="fchip" data-filter="break" data-val="確保できた">確保できた</div>
-        <div class="fchip" data-filter="break" data-val="できなかった">できなかった</div>
-      </div>
-      <div class="filter-label">コミュニケーション評価</div>
-      <div class="filter-chips">
-        <div class="fchip f-good" data-filter="comm" data-val="良好">😊 良好</div>
-        <div class="fchip f-warn" data-filter="comm" data-val="普通">😐 普通</div>
-        <div class="fchip f-bad" data-filter="comm" data-val="課題あり">😔 課題あり</div>
-      </div>
-      <div class="filter-label">症例</div>
-      <div class="filter-chips">
-        <div class="fchip" data-filter="case" data-val="yes">症例あり</div>
-        <div class="fchip" data-filter="case" data-val="no">症例なし</div>
+    <div class="p-5">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full bg-[var(--soft-info)] flex items-center justify-center text-[var(--navy-700)] flex-shrink-0">
+          <svg viewBox="0 0 24 24" width="18" height="18" class="ico"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        </div>
+        <div>
+          <div class="font-display font-bold text-[16px] mb-1">この内容で保存しますか？</div>
+        </div>
       </div>
     </div>
-    <div class="mbody" id="m-hist-body"></div>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" onclick="closeModal('confirmModal')">キャンセル</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="confirmSaveBtn">保存する</button>
+    </div>
   </div>
 </div>
 
-<!-- 詳細 -->
-<div class="mbg" id="m-detail">
+<!-- ============ MODAL: POST-SAVE ============ -->
+<div class="modal-backdrop" id="postSaveModal">
   <div class="modal">
-    <div class="mhead">
-      <h3 id="m-detail-title">記録の詳細</h3>
-      <button class="mcls" data-close="m-detail">×</button>
+    <div class="p-5 text-center">
+      <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 mx-auto mb-3 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" width="22" height="22" class="ico"><path d="M20 6 9 17l-5-5"/></svg>
+      </div>
+      <div class="font-display font-bold text-[17px] mb-1">保存しました</div>
+      <p class="text-[13px] text-[var(--muted)]">続けて入力しますか？</p>
     </div>
-    <div class="mbody" id="m-detail-body"></div>
-  </div>
-</div>
-
-<!-- 削除確認 -->
-<div class="cfmbg" id="m-cfm">
-  <div class="cfm">
-    <p>この記録を削除しますか？<br>この操作は取り消せません。</p>
-    <div class="cfm-btns">
-      <button class="b-cfm-c" data-close="m-cfm">キャンセル</button>
-      <button class="b-cfm-d" id="btn-cfm-del">削除する</button>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" id="postCloseBtn">閉じる</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="postNewBtn">新規入力</button>
     </div>
   </div>
 </div>
 
-<!-- 編集破棄確認 -->
-<div class="cfmbg" id="m-discard">
-  <div class="cfm">
-    <p>編集内容を破棄しますか？<br>入力した内容は失われます。</p>
-    <div class="cfm-btns">
-      <button class="b-cfm-c" data-close="m-discard">続ける</button>
-      <button class="b-cfm-d" id="btn-discard-yes">破棄する</button>
+<!-- ============ MODAL: PIN ============ -->
+<div class="modal-backdrop" id="pinModal">
+  <div class="modal">
+    <div class="p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <svg viewBox="0 0 24 24" width="18" height="18" class="ico text-[var(--navy-700)]"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="font-display font-bold text-[16px]">暗証番号を入力</div>
+      </div>
+      <div class="flex gap-2 justify-center mb-3" id="pinDots">
+        <div class="pin-dot" data-i="0"></div>
+        <div class="pin-dot" data-i="1"></div>
+        <div class="pin-dot" data-i="2"></div>
+        <div class="pin-dot" data-i="3"></div>
+      </div>
+      <input type="tel" inputmode="numeric" maxlength="4" id="pinInput" class="fld text-center num-tabular tracking-[0.5em]" placeholder="----" autocomplete="off" />
+      <div id="pinError" class="text-[12px] text-red-600 mt-2 text-center font-semibold hidden">暗証番号が違います</div>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" onclick="closeModal('pinModal')">キャンセル</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="pinConfirmBtn">ダウンロード</button>
     </div>
   </div>
 </div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
 
 <script>
-'use strict';
+/* ================================================================
+   ER Team Reflection — App Logic
+   Storage: LocalStorage key "er_reflection_v1"
+================================================================ */
 
-/* ============================================================
-   定数・状態管理
-   ============================================================ */
-const STORAGE_KEY = 'nr';
-const PIN_CODE = '0000'; // 本番では変更してください
-const MAX_RECORDS = 500; // 保存上限（容量対策）
+const STORAGE_KEY = "er_reflection_v1";
+const PIN_CODE = "1234";
 
-const state = {
-  shift: '', staff: '', breakS: '', support: '',
-  comm: '', caseP: '',
-  editIdx: null, delIdx: null,
-  caseSeq: 0, commSeq: 0,
-  // 履歴フィルタ（複数値選択可、空配列＝フィルタなし）
-  filters: { shift: [], staff: [], break: [], comm: [], case: [] },
-  // 統計の集計期間（日数）
-  statsPeriod: 30,
-  // 保存処理中フラグ（多重保存防止）
-  saving: false
+// ------------ State ------------
+let formState = {
+  shift: null,
+  break_secured: null,
+  help_requested: null,
+  case_exists: null,
+  team_collab: null, external_collab: null, psych_safety: null,
+  hospitality: null, wait_care: null, anxiety_relief: null,
 };
 
-/* ============================================================
-   ユーティリティ
-   ============================================================ */
-const $ = (id) => document.getElementById(id);
-const $$ = (sel, root = document) => root.querySelectorAll(sel);
+// ------------ Helpers ------------
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const todayIso = () => {
+  const d = new Date();
+  const z = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`;
+};
+const nowTime = () => {
+  const d = new Date();
+  const z = n => String(n).padStart(2,"0");
+  return `${z(d.getHours())}:${z(d.getMinutes())}:${z(d.getSeconds())}`;
+};
+const loadAll = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
+  catch { return []; }
+};
+const saveAll = arr => localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
 
-const fmtD = (d) => `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${'日月火水木金土'[d.getDay()]}）`;
-const fmtT = (d) => `${('0'+d.getHours()).slice(-2)}:${('0'+d.getMinutes()).slice(-2)}`;
-const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-function showErr(id, show = true) {
-  const el = $(id);
-  if (el) el.classList.toggle('show', show);
-}
-
-function showToast(msg, isErr = false) {
-  const t = document.createElement('div');
-  t.className = 'toast ' + (isErr ? 'toast-e' : 'toast-n');
+const toast = (msg) => {
+  const t = $("#toast");
   t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
+  t.dataset.show = "true";
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(() => t.dataset.show = "false", 2200);
+};
+
+// ------------ Init ------------
+function init() {
+  $("#f_date").value = todayIso();
+
+  setupSegmented();
+  setupSteppers();
+  setupTabs();
+  setupFilters();
+  setupSaveFlow();
+  setupExport();
+  refreshReporterList();
+
+  renderHistory();
+  renderStats();
 }
 
-// click と touchend の二重発火を防ぐシンプルなヘルパー
-// → 現代のモバイルブラウザでは click だけで十分高速（300ms 遅延は touch-action: manipulation で解決済み）
-function on(el, fn) {
-  if (!el) return;
-  el.addEventListener('click', fn);
+// 記録者名の予測候補（過去記録から生成）
+function refreshReporterList() {
+  const dl = $("#reporterList");
+  if (!dl) return;
+  const names = [...new Set(
+    loadAll()
+      .map(r => (r.reporter || "").trim())
+      .filter(Boolean)
+  )].sort((a,b) => a.localeCompare(b, "ja"));
+  dl.innerHTML = names.map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
 }
 
-// 排他選択（同じ data-* 属性を持つ兄弟から 1 つだけ選ぶ）
-function exclusiveSelect(container, selector, selected) {
-  $$(selector, container).forEach(el => el.classList.toggle('sel', el === selected));
-}
-
-/* ============================================================
-   ストレージ
-   ============================================================ */
-function getRecs() {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-  } catch (e) {
-    console.error('localStorage read failed', e);
-    return [];
-  }
-}
-
-function setRecs(recs) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(recs));
-    checkStorageUsage();
-    return true;
-  } catch (e) {
-    console.error('localStorage write failed', e);
-    showToast('保存に失敗しました。容量が不足している可能性があります', true);
-    return false;
-  }
-}
-
-function checkStorageUsage() {
-  try {
-    const data = localStorage.getItem(STORAGE_KEY) || '';
-    // localStorage は概ね 5MB。2MB 超でアラート
-    const warn = data.length > 2_000_000;
-    $('storage-warn').classList.toggle('show', warn);
-  } catch (_) {}
-}
-
-/* ============================================================
-   入力者サジェスト（datalist 更新）
-   ============================================================ */
-function refreshAuthorSuggestions() {
-  const recs = getRecs();
-  // 登場回数順にソート。trim済みの値で正規化して集計
-  const counts = new Map();
-  recs.forEach(r => {
-    const name = (r.author || '').trim();
-    if (name) counts.set(name, (counts.get(name) || 0) + 1);
-  });
-  const sorted = [...counts.entries()]
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'ja'))
-    .map(([n]) => n);
-  $('author-list').innerHTML = sorted.map(n => `<option value="${esc(n)}">`).join('');
-}
-
-// 入力者欄：フォーカスアウト時に前後の空白を自動で除去
-// （保存時にもtrimしているが、見た目も揃えて再入力時の一貫性を保つ）
-$('author').addEventListener('blur', () => {
-  const el = $('author');
-  const trimmed = el.value.trim();
-  if (el.value !== trimmed) el.value = trimmed;
-});
-
-/* ============================================================
-   初期化：ヘッダー日付（表示用。保存時は保存時刻を使う）
-   ============================================================ */
-function refreshHeaderDate() {
-  $('hdate').textContent = fmtD(new Date());
-}
-refreshHeaderDate();
-// タブを復帰したタイミングで日付更新
-document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) refreshHeaderDate();
-});
-
-/* ============================================================
-   選択系（data-* 属性ベースでイベント委譲）
-   ============================================================ */
-// 勤務区分
-$$('[data-shift]').forEach(el => on(el, () => selectShift(el.dataset.shift)));
-function selectShift(v) {
-  state.shift = v;
-  $$('[data-shift]').forEach(el => el.classList.toggle('sel', el.dataset.shift === v));
-  showErr('e-shift', false);
-}
-
-// 配置状況
-$$('[data-staff]').forEach(el => on(el, () => selectStaff(el.dataset.staff)));
-function selectStaff(v) {
-  state.staff = v;
-  $$('[data-staff]').forEach(el => el.classList.toggle('sel', el.dataset.staff === v));
-  showErr('e-nurse', false);
-}
-
-// 休憩
-$$('[data-break]').forEach(el => on(el, () => selectBreak(el.dataset.break)));
-function selectBreak(v) {
-  state.breakS = v;
-  $$('[data-break]').forEach(el => el.classList.toggle('sel', el.dataset.break === v));
-  $('br-detail').style.display = v === 'ng' ? 'block' : 'none';
-  showErr('e-break', false);
-
-  // 「確保できた」に切り替わった時は、不足関連の入力値・状態をすべてクリア
-  if (v === 'ok') {
-    $('br-min').value = '';
-    $('br-staff').value = '';
-    $('sup-reason').value = '';
-    state.support = '';
-    $$('[data-support]').forEach(el => el.classList.remove('sel'));
-    $('sup-reason-wrap').style.display = 'none';
-    showErr('e-br-min', false);
-    showErr('e-support', false);
-  }
-}
-
-// 応援
-$$('[data-support]').forEach(el => on(el, () => selectSupport(el.dataset.support)));
-function selectSupport(v) {
-  state.support = v;
-  $$('[data-support]').forEach(el => el.classList.toggle('sel', el.dataset.support === v));
-  $('sup-reason-wrap').style.display = v === 'no' ? 'block' : 'none';
-  // 「あり」に切り替わった時は理由欄をクリア
-  if (v === 'yes') $('sup-reason').value = '';
-  showErr('e-support', false);
-}
-
-// コミュニケーション評価
-$$('[data-comm]').forEach(el => on(el, () => selectComm(el.dataset.comm)));
-function selectComm(v) {
-  state.comm = v;
-  $$('[data-comm]').forEach(el => el.classList.toggle('sel', el.dataset.comm === v));
-  $('comm-positive').style.display = (v === 'good' || v === 'normal') ? 'block' : 'none';
-  $('comm-detail').style.display = v === 'bad' ? 'block' : 'none';
-  showErr('e-comm', false);
-
-  if (v === 'bad') {
-    if (!$('comm-con').children.length) addCommBlock();
-  } else {
-    $('comm-con').innerHTML = '';
-    state.commSeq = 0;
-  }
-}
-
-// 症例有無
-$$('[data-case]').forEach(el => on(el, () => selectCaseP(el.dataset.case)));
-function selectCaseP(v) {
-  state.caseP = v;
-  $$('[data-case]').forEach(el => el.classList.toggle('sel', el.dataset.case === v));
-  $('cases-wrap').style.display = v === 'yes' ? 'block' : 'none';
-  showErr('e-cp', false);
-
-  if (v === 'yes' && !$$('.case-card').length) addCaseBlock();
-  if (v === 'no') {
-    $('cases-con').innerHTML = '';
-    state.caseSeq = 0;
-  }
-}
-
-// よかったことタグ（トグル）
-$$('#pf-chips .mchip').forEach(el => on(el, () => el.classList.toggle('sel')));
-
-/* ============================================================
-   コミュニケーション「課題あり」ブロック
-   ============================================================ */
-function reindexCommBlocks() {
-  $$('#comm-con .comm-block .clbl').forEach((el, i) => {
-    el.textContent = `対象 ${i + 1}`;
-  });
-}
-
-function addCommBlock(data) {
-  state.commSeq++;
-  const seq = state.commSeq;
-
-  const card = document.createElement('div');
-  card.className = 'card card-wh comm-block';
-  card.dataset.seq = seq;
-
-  card.innerHTML = `
-    <div class="clbl">対象</div>
-    <button class="rm" type="button" aria-label="削除">×</button>
-    <div class="lbl" style="margin-bottom:6px;">対象</div>
-    <div class="chips target-chips" style="margin-bottom:10px;">
-      <div class="mchip" data-target="看護師">看護師</div>
-      <div class="mchip" data-target="医師">医師</div>
-      <div class="mchip" data-target="患者">患者</div>
-      <div class="mchip" data-target="その他">その他</div>
-    </div>
-    <div class="lbl" style="margin-bottom:4px;">コメント<span class="req">*</span></div>
-    <textarea class="comm-note" placeholder="具体的な状況や内容を入力してください" style="min-height:60px;" maxlength="500"></textarea>
-  `;
-
-  $('comm-con').appendChild(card);
-
-  // 削除
-  on(card.querySelector('.rm'), () => {
-    card.remove();
-    reindexCommBlocks();
-  });
-
-  // 対象チップ（複数選択可）
-  $$('.target-chips .mchip', card).forEach(chip => {
-    on(chip, () => chip.classList.toggle('sel'));
-  });
-
-  // 編集時の復元
-  if (data) {
-    if (data.targets) {
-      const set = new Set(data.targets.split('・'));
-      $$('.target-chips .mchip', card).forEach(chip => {
-        if (set.has(chip.dataset.target)) chip.classList.add('sel');
-      });
-    }
-    card.querySelector('.comm-note').value = data.note || '';
-  }
-
-  reindexCommBlocks();
-  showErr('e-comm-n', false);
-}
-
-function getCommNotes() {
-  const out = [];
-  $$('#comm-con .comm-block').forEach(card => {
-    const targets = Array.from($$('.target-chips .mchip.sel', card)).map(c => c.dataset.target);
-    const note = card.querySelector('.comm-note').value.trim();
-    if (targets.length || note) {
-      out.push({ targets: targets.join('・'), note });
-    }
-  });
-  return out;
-}
-
-on($('btn-add-comm'), () => addCommBlock());
-
-/* ============================================================
-   症例ブロック
-   ============================================================ */
-function reindexCaseBlocks() {
-  $$('#cases-con .case-card .clbl').forEach((el, i) => {
-    el.textContent = `症例 ${i + 1}`;
-  });
-}
-
-function addCaseBlock(data) {
-  state.caseSeq++;
-  const card = document.createElement('div');
-  card.className = 'card case-card';
-
-  card.innerHTML = `
-    <div class="clbl">症例</div>
-    <button class="rm" type="button" aria-label="削除">×</button>
-    <div class="lbl" style="margin-bottom:6px;">搬送区分<span class="req">*</span></div>
-    <div class="chips transport-chips" style="margin-bottom:10px;">
-      <div class="chip" data-transport="救急車">🚑 救急車</div>
-      <div class="chip" data-transport="ウォークイン">🚶 ウォークイン</div>
-      <div class="chip" data-transport="その他">その他</div>
-    </div>
-    <div class="lbl" style="margin-bottom:4px;">患者ID</div>
-    <input type="text" class="case-id" placeholder="例：123456" maxlength="20" style="margin-bottom:10px;">
-    <div class="lbl" style="margin-bottom:4px;">気になった内容<span class="req">*</span></div>
-    <textarea class="case-note" placeholder="疾患、対応、気づいたことなど" maxlength="1000"></textarea>
-  `;
-
-  $('cases-con').appendChild(card);
-
-  // 削除
-  on(card.querySelector('.rm'), () => {
-    card.remove();
-    reindexCaseBlocks();
-  });
-
-  // 搬送区分（排他選択）
-  $$('.transport-chips .chip', card).forEach(chip => {
-    on(chip, () => exclusiveSelect(card, '.transport-chips .chip', chip));
-  });
-
-  // 編集時の復元
-  if (data) {
-    if (data.transport) {
-      const target = card.querySelector(`.transport-chips [data-transport="${data.transport}"]`);
-      if (target) exclusiveSelect(card, '.transport-chips .chip', target);
-    }
-    card.querySelector('.case-id').value = data.patientId || '';
-    card.querySelector('.case-note').value = data.note || '';
-  }
-
-  reindexCaseBlocks();
-}
-
-function getCases() {
-  const out = [];
-  $$('#cases-con .case-card').forEach(card => {
-    const selChip = card.querySelector('.transport-chips .chip.sel');
-    out.push({
-      transport: selChip ? selChip.dataset.transport : '',
-      patientId: card.querySelector('.case-id').value.trim(),
-      note: card.querySelector('.case-note').value.trim()
+// ------------ Segmented buttons ------------
+function setupSegmented() {
+  $$("[data-seg-field]").forEach(group => {
+    const field = group.dataset.segField;
+    group.addEventListener("click", (e) => {
+      const btn = e.target.closest(".seg-btn");
+      if (!btn) return;
+      const val = btn.dataset.val;
+      // toggle
+      $$(".seg-btn", group).forEach(b => b.dataset.selected = (b === btn ? "true" : "false"));
+      formState[field] = val;
+      handleConditionals(field, val);
     });
   });
-  return out;
 }
 
-on($('btn-add-case'), () => addCaseBlock());
-
-/* ============================================================
-   バリデーション
-   ============================================================ */
-function validate() {
-  let ok = true;
-  let firstErrEl = null;
-  const markErr = (id, cond) => {
-    showErr(id, cond);
-    if (cond) {
-      ok = false;
-      if (!firstErrEl) firstErrEl = $(id);
-    }
-  };
-
-  markErr('e-shift', !state.shift);
-
-  const nurseN = parseInt($('nurse-n').value, 10);
-  markErr('e-nurse', !nurseN || nurseN < 1 || !state.staff);
-
-  markErr('e-break', !state.breakS);
-
-  if (state.breakS === 'ng') {
-    const brMin = parseInt($('br-min').value, 10);
-    markErr('e-br-min', !brMin || brMin < 10);
-    markErr('e-support', !state.support);
-  }
-
-  markErr('e-comm', !state.comm);
-
-  if (state.comm === 'bad') {
-    const notes = getCommNotes();
-    const allFilled = notes.length > 0 && notes.every(n => n.note);
-    markErr('e-comm-n', !allFilled);
-  }
-
-  markErr('e-cp', !state.caseP);
-
-  if (state.caseP === 'yes') {
-    const cs = getCases();
-    if (!cs.length || cs.some(c => !c.transport || !c.note)) {
-      showToast('症例の搬送区分と内容を入力してください', true);
-      ok = false;
+function handleConditionals(field, val) {
+  if (field === "break_secured") {
+    const box = $("#break_detail");
+    box.dataset.show = (val === "確保できなかった") ? "true" : "false";
+    if (val !== "確保できなかった") {
+      // reset nested
+      formState.help_requested = null;
+      $$('[data-seg-field="help_requested"] .seg-btn').forEach(b => b.dataset.selected = "false");
+      $("#help_no_reason").dataset.show = "false";
+      $("#f_short_min").value = 0;
+      $("#f_short_people").value = 1;
+      $("#f_no_help_reason").value = "";
     }
   }
-
-  markErr('e-author', !$('author').value.trim());
-
-  if (!ok && firstErrEl) {
-    firstErrEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  if (field === "help_requested") {
+    $("#help_no_reason").dataset.show = (val === "なし") ? "true" : "false";
+    if (val !== "なし") $("#f_no_help_reason").value = "";
   }
-
-  return ok;
+  if (field === "case_exists") {
+    $("#case_detail").dataset.show = (val === "あり") ? "true" : "false";
+    if (val !== "あり") {
+      $("#f_case_type").value = "";
+      $("#f_case_id").value = "";
+      $("#f_case_content").value = "";
+    }
+  }
 }
 
-/* ============================================================
-   保存・編集モード
-   ============================================================ */
-on($('btn-save'), () => {
-  if (state.saving) return; // 保存処理中は無視
-  if (!validate()) {
-    showToast('未入力の項目があります', true);
-    return;
-  }
-  $('save-confirm-msg').textContent = state.editIdx !== null ? '上書き保存しますか？' : '保存しますか？';
-  $('m-save-confirm').classList.add('open');
-});
+// ------------ Number steppers ------------
+function setupSteppers() {
+  $$("[data-stp]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const input = $("#" + btn.dataset.stp);
+      const delta = parseInt(btn.dataset.delta, 10);
+      const current = parseInt(input.value || "0", 10);
+      const next = Math.max(0, current + delta);
+      input.value = next;
+    });
+  });
+}
 
-on($('btn-save-yes'), () => {
-  if (state.saving) return;
-  $('m-save-confirm').classList.remove('open');
-  doSave();
-});
+// ------------ Tabs ------------
+function setupTabs() {
+  $$(".tab-btn").forEach(b => {
+    b.addEventListener("click", () => {
+      const target = b.dataset.tab;
+      $$(".tab-btn").forEach(x => x.dataset.active = (x === b ? "true" : "false"));
+      $("#tab-input").classList.toggle("hidden", target !== "input");
+      $("#tab-history").classList.toggle("hidden", target !== "history");
+      $("#tab-stats").classList.toggle("hidden", target !== "stats");
+      if (target === "history") renderHistory();
+      if (target === "stats") renderStats();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
 
-function doSave() {
-  if (state.saving) return;
-  state.saving = true;
-  const saveBtn = $('btn-save');
-  saveBtn.disabled = true;
-  saveBtn.style.opacity = '0.5';
-
-  try {
-    const now = new Date();
-    const staffLbl = { enough: '十分', normal: '普通', short: '不足' }[state.staff] || '';
-    const pfTags = Array.from($$('#pf-chips .mchip.sel')).map(el => el.dataset.pf);
-
-    const rec = {
-      date: fmtD(now),
-      time: fmtT(now),
-      ts: now.toISOString(),
-      author: $('author').value.trim(),
-      shift: state.shift === 'day' ? '日勤' : '夜勤',
-      nurseN: $('nurse-n').value,
-      staffLbl,
-      breakS: state.breakS === 'ok' ? '確保できた' : 'できなかった',
-      brMin: state.breakS === 'ng' ? $('br-min').value : '',
-      brStaff: state.breakS === 'ng' ? $('br-staff').value : '',
-      supportS: state.breakS === 'ng' ? (state.support === 'yes' ? 'あり' : 'なし') : '',
-      supReason: state.breakS === 'ng' && state.support === 'no' ? $('sup-reason').value.trim() : '',
-      commS: { good: '良好', normal: '普通', bad: '課題あり' }[state.comm] || '',
-      pfTags,
-      pfNote: $('pf-note').value.trim(),
-      commNotes: state.comm === 'bad' ? getCommNotes() : [],
-      caseP: state.caseP,
-      cases: state.caseP === 'yes' ? getCases() : [],
-      free: $('free').value.trim()
-    };
-
-    const recs = getRecs();
-    if (state.editIdx !== null) {
-      recs[state.editIdx] = rec;
-    } else {
-      recs.unshift(rec);
-      // 上限超過の警告（削除はしない）
-      if (recs.length > MAX_RECORDS) {
-        showToast(`記録が${MAX_RECORDS}件を超えています。CSVに書き出して古い記録の整理をおすすめします`);
+// ------------ Filters ------------
+function setupFilters() {
+  // チップ押下の共通ハンドラ（単一選択 or 複数選択をdata-modeで分岐）
+  $$(".chip-group").forEach(group => {
+    group.addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      const mode = group.dataset.mode || "multi";
+      if (mode === "single") {
+        $$(".chip", group).forEach(c => c.dataset.active = (c === btn ? "true" : "false"));
+      } else {
+        btn.dataset.active = btn.dataset.active === "true" ? "false" : "true";
       }
-    }
+      const kind = group.dataset.filterKind;
+      if (kind === "hist") renderHistory();
+      if (kind === "stats") renderStats();
+    });
+  });
 
-    if (!setRecs(recs)) return;
+  // フリー検索（履歴・統計）
+  $("#histFreeSearch").addEventListener("input", debounce(renderHistory, 180));
+  $("#statsFreeSearch").addEventListener("input", debounce(renderStats, 180));
+  $("#statsScope").addEventListener("change", renderStats);
 
-    refreshAuthorSuggestions();
-    state.editIdx = null;
-    $('edit-banner').classList.remove('show');
-    $('m-done').classList.add('open');
-  } finally {
-    state.saving = false;
-    saveBtn.disabled = false;
-    saveBtn.style.opacity = '';
-  }
+  // リセットボタン
+  $("#histClearBtn").addEventListener("click", () => {
+    clearChipGroups("hist");
+    $("#histFreeSearch").value = "";
+    renderHistory();
+  });
+  $("#statsClearBtn").addEventListener("click", () => {
+    clearChipGroups("stats");
+    $("#statsFreeSearch").value = "";
+    $("#statsScope").value = "all";
+    renderStats();
+  });
 }
 
-on($('btn-stay'), () => $('m-done').classList.remove('open'));
-on($('btn-new'), () => {
-  $('m-done').classList.remove('open');
-  resetForm();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+function clearChipGroups(kind) {
+  $$(`.chip-group[data-filter-kind="${kind}"]`).forEach(group => {
+    const mode = group.dataset.mode;
+    const key = group.dataset.filterKey;
+    $$(".chip", group).forEach(c => {
+      if (mode === "single" && key === "days") {
+        c.dataset.active = (c.dataset.days === "7" ? "true" : "false");
+      } else {
+        c.dataset.active = "false";
+      }
+    });
+  });
+}
 
-on($('btn-cancel-edit'), () => {
-  $('m-discard').classList.add('open');
-});
+function debounce(fn, wait) {
+  let t;
+  return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
+}
 
-on($('btn-discard-yes'), () => {
-  $('m-discard').classList.remove('open');
-  state.editIdx = null;
-  $('edit-banner').classList.remove('show');
-  resetForm();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+// チップグループから選択値の配列を取り出す
+function getSelectedChipValues(kind, key) {
+  const group = $(`.chip-group[data-filter-kind="${kind}"][data-filter-key="${key}"]`);
+  if (!group) return [];
+  return $$('.chip[data-active="true"]', group).map(c => c.dataset.val).filter(Boolean);
+}
+
+// ------------ Save Flow ------------
+function setupSaveFlow() {
+  $("#saveBtn").addEventListener("click", () => {
+    // Minimal validation
+    const missing = [];
+    if (!$("#f_date").value) missing.push("日付");
+    if (!formState.shift) missing.push("勤務帯");
+    if (!$("#f_reporter").value.trim()) missing.push("記録者名");
+    if (!formState.break_secured) missing.push("休憩の確保");
+    // チームの状態：3項目とも必須
+    if (!formState.team_collab) missing.push("チーム連携");
+    if (!formState.external_collab) missing.push("他関連機関との連携");
+    if (!formState.psych_safety) missing.push("心理的安全性");
+    // 患者・家族への関わり：3項目とも必須
+    if (!formState.hospitality) missing.push("接遇面");
+    if (!formState.wait_care) missing.push("待ち時間への配慮");
+    if (!formState.anxiety_relief) missing.push("不安軽減");
+    // 振り返りケース：あり/なしは必須
+    if (!formState.case_exists) missing.push("振り返りケース");
+    if (missing.length) {
+      toast(`未入力: ${missing.join(" / ")}`);
+      return;
+    }
+    openModal("confirmModal");
+  });
+
+  $("#confirmSaveBtn").addEventListener("click", () => {
+    const record = buildRecord();
+    const all = loadAll();
+    all.push(record);
+    saveAll(all);
+    refreshReporterList();
+    closeModal("confirmModal");
+    openModal("postSaveModal");
+  });
+
+  $("#postCloseBtn").addEventListener("click", () => {
+    closeModal("postSaveModal");
+  });
+  $("#postNewBtn").addEventListener("click", () => {
+    closeModal("postSaveModal");
+    resetForm();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+}
+
+function buildRecord() {
+  const readNote = name => {
+    const el = $(`[data-note="${name}"]`);
+    return el ? el.value.trim() : "";
+  };
+  return {
+    id: "r_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    date: $("#f_date").value,
+    saved_time: nowTime(),
+    saved_at_ms: Date.now(),
+    shift: formState.shift,
+    team: {
+      nurses: parseInt($("#f_nurses").value || "0", 10),
+      doctors: parseInt($("#f_doctors").value || "0", 10),
+    },
+    reporter: $("#f_reporter").value.trim(),
+    workload: {
+      break_secured: formState.break_secured,
+      short_min: formState.break_secured === "確保できなかった" ? parseInt($("#f_short_min").value || "0", 10) : 0,
+      short_people: formState.break_secured === "確保できなかった" ? parseInt($("#f_short_people").value || "0", 10) : 0,
+      help_requested: formState.break_secured === "確保できなかった" ? formState.help_requested : null,
+      no_help_reason: (formState.break_secured === "確保できなかった" && formState.help_requested === "なし") ? $("#f_no_help_reason").value.trim() : "",
+    },
+    team_state: {
+      team_collab: formState.team_collab,
+      team_collab_note: readNote("team_collab_note"),
+      external_collab: formState.external_collab,
+      external_collab_note: readNote("external_collab_note"),
+      psych_safety: formState.psych_safety,
+      psych_safety_note: readNote("psych_safety_note"),
+    },
+    patient_care: {
+      hospitality: formState.hospitality,
+      wait_care: formState.wait_care,
+      anxiety_relief: formState.anxiety_relief,
+      comment: $("#f_patient_comment").value.trim(),
+    },
+    case: {
+      exists: formState.case_exists,
+      type: formState.case_exists === "あり" ? $("#f_case_type").value : "",
+      case_id: formState.case_exists === "あり" ? $("#f_case_id").value.trim() : "",
+      content: formState.case_exists === "あり" ? $("#f_case_content").value.trim() : "",
+    },
+    share: $("#f_share").value.trim(),
+  };
+}
 
 function resetForm() {
-  // 状態クリア
-  Object.assign(state, { shift: '', staff: '', breakS: '', support: '', comm: '', caseP: '' });
-  $$('.sel').forEach(el => el.classList.remove('sel'));
-  $$('.err.show').forEach(el => el.classList.remove('show'));
-  ['nurse-n','br-min','br-staff','sup-reason','pf-note','author','free'].forEach(id => { if ($(id)) $(id).value = ''; });
-  $('br-detail').style.display = 'none';
-  $('sup-reason-wrap').style.display = 'none';
-  $('comm-positive').style.display = 'none';
-  $('comm-detail').style.display = 'none';
-  $('cases-wrap').style.display = 'none';
-  $('comm-con').innerHTML = '';
-  $('cases-con').innerHTML = '';
-  state.commSeq = 0;
-  state.caseSeq = 0;
-  refreshHeaderDate();
-}
-
-/* ============================================================
-   CSV エクスポート（PIN 認証）
-   ============================================================ */
-on($('btn-exp'), () => {
-  $('pin-input').value = '';
-  $('pin-err').style.display = 'none';
-  $('m-pin').classList.add('open');
-  setTimeout(() => $('pin-input').focus(), 100);
-});
-
-on($('btn-pin-ok'), () => {
-  if ($('pin-input').value === PIN_CODE) {
-    $('m-pin').classList.remove('open');
-    $('pin-input').value = '';
-    doExportCSV();
-  } else {
-    $('pin-err').style.display = 'block';
-  }
-});
-
-$('pin-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') $('btn-pin-ok').click();
-});
-
-function doExportCSV() {
-  const recs = getRecs();
-  if (!recs.length) {
-    showToast('保存されたデータがありません', true);
-    return;
-  }
-
-  const maxComm = Math.max(0, ...recs.map(r => (r.commNotes || []).length));
-  const maxCase = Math.max(0, ...recs.map(r => (r.cases || []).length));
-
-  const header = ['日付','時刻','入力者','勤務区分','看護師人数','配置状況','休憩確保','休憩不足(分)','かけた人数','病棟・他部署応援','応援なし理由','コミュニケーション評価'];
-  for (let c = 1; c <= maxComm; c++) header.push(`対象${c}`, `コメント${c}`);
-  header.push('よかったこと(タグ)','よかったことコメント','共有コメント','症例有無');
-  for (let k = 1; k <= maxCase; k++) header.push(`症例${k}_搬送区分`, `症例${k}_患者ID`, `症例${k}_内容`);
-
-  const csvCell = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const rows = [header.map(csvCell).join(',')];
-
-  recs.forEach(r => {
-    const row = [
-      r.date, r.time || '', r.author || '', r.shift, r.nurseN, r.staffLbl,
-      r.breakS, r.brMin || '', r.brStaff || '', r.supportS || '', r.supReason || '',
-      r.commS || ''
-    ];
-    for (let ci = 0; ci < maxComm; ci++) {
-      const cn = r.commNotes && r.commNotes[ci];
-      row.push(cn ? cn.targets : '', cn ? cn.note : '');
-    }
-    row.push((r.pfTags || []).join('・'), r.pfNote || '', r.free || '', r.caseP === 'no' ? 'なし' : 'あり');
-    for (let si = 0; si < maxCase; si++) {
-      const cs = r.cases && r.cases[si];
-      row.push(cs ? cs.transport : '', cs ? cs.patientId : '', cs ? cs.note : '');
-    }
-    rows.push(row.map(csvCell).join(','));
-  });
-
-  const csv = '\uFEFF' + rows.join('\n');
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `振り返り_${new Date().toISOString().slice(0, 10)}.csv`;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-  showToast('CSVをダウンロードしました');
-}
-
-/* ============================================================
-   履歴表示・検索・フィルタ・統計
-   ============================================================ */
-on($('btn-hist'), openHist);
-
-function openHist() {
-  buildHistList();
-  $('m-hist').classList.add('open');
-}
-
-$('hist-search').addEventListener('input', () => buildHistList());
-
-// フィルタチップのクリック（複数選択可）
-$$('.fchip[data-filter]').forEach(chip => {
-  on(chip, () => {
-    const { filter, val } = chip.dataset;
-    const arr = state.filters[filter];
-    const idx = arr.indexOf(val);
-    if (idx >= 0) arr.splice(idx, 1);
-    else arr.push(val);
-    chip.classList.toggle('sel');
-    buildHistList();
-  });
-});
-
-on($('btn-filter-clear'), () => {
-  Object.keys(state.filters).forEach(k => state.filters[k] = []);
-  $$('.fchip[data-filter].sel').forEach(el => el.classList.remove('sel'));
-  $('hist-search').value = '';
-  buildHistList();
-});
-
-// レコードから Date オブジェクトを安全に取り出す
-function recDate(r) {
-  if (r.ts) {
-    const d = new Date(r.ts);
-    if (!isNaN(d.getTime())) return d;
-  }
-  return null;
-}
-
-// 指定日数内の統計を計算（recs はすでにフィルタ適用済みを受け取る）
-function calcStats(recs, days) {
-  const now = Date.now();
-  const windowMs = days * 24 * 60 * 60 * 1000;
-  const recent = recs.filter(r => {
-    const d = recDate(r);
-    return d && (now - d.getTime()) <= windowMs;
-  });
-
-  const total = recent.length;
-  if (!total) return { total: 0 };
-
-  const byShift = { day: 0, night: 0 };
-  let breakOk = 0;
-  let commBad = 0;
-  let commGood = 0;
-  let caseYes = 0;
-  let staffShort = 0;
-  let breakShortSum = 0;
-  let breakShortCount = 0;
-
-  recent.forEach(r => {
-    if (r.shift === '日勤') byShift.day++;
-    else if (r.shift === '夜勤') byShift.night++;
-    if (r.breakS === '確保できた') breakOk++;
-    if (r.commS === '課題あり') commBad++;
-    if (r.commS === '良好') commGood++;
-    if (r.caseP === 'yes') caseYes++;
-    if (r.staffLbl === '不足') staffShort++;
-    if (r.brMin) {
-      const m = parseInt(r.brMin, 10);
-      if (!isNaN(m)) { breakShortSum += m; breakShortCount++; }
-    }
-  });
-
-  return {
-    total,
-    byShift,
-    breakRate: Math.round((breakOk / total) * 100),
-    commBadRate: Math.round((commBad / total) * 100),
-    commGoodRate: Math.round((commGood / total) * 100),
-    caseRate: Math.round((caseYes / total) * 100),
-    staffShortRate: Math.round((staffShort / total) * 100),
-    avgBreakShort: breakShortCount ? Math.round(breakShortSum / breakShortCount) : 0,
-    breakShortCount
+  formState = {
+    shift: null, break_secured: null, help_requested: null, case_exists: null,
+    team_collab: null, external_collab: null, psych_safety: null,
+    hospitality: null, wait_care: null, anxiety_relief: null,
   };
+  $("#f_date").value = todayIso();
+  $("#f_nurses").value = 0;
+  $("#f_doctors").value = 0;
+  $("#f_reporter").value = "";
+  $("#f_short_min").value = 0;
+  $("#f_short_people").value = 1;
+  $("#f_no_help_reason").value = "";
+  $("#f_case_type").value = "";
+  $("#f_case_id").value = "";
+  $("#f_case_content").value = "";
+  $("#f_patient_comment").value = "";
+  $("#f_share").value = "";
+  $$("[data-note]").forEach(el => el.value = "");
+  $$(".seg-btn").forEach(b => b.dataset.selected = "false");
+  $("#break_detail").dataset.show = "false";
+  $("#help_no_reason").dataset.show = "false";
+  $("#case_detail").dataset.show = "false";
 }
 
-function renderStats(recs, isFiltered) {
-  const days = state.statsPeriod;
-  const s = calcStats(recs, days);
-  const periodLabel = `直近${days}日`;
+// ------------ Modal ------------
+function openModal(id) { $("#"+id).dataset.open = "true"; document.body.style.overflow="hidden"; }
+function closeModal(id) { $("#"+id).dataset.open = "false"; document.body.style.overflow=""; }
 
-  // 期間切り替えタブ
-  const tabsHtml = `
-    <div class="stats-tabs">
-      <div class="stats-tab${days === 7 ? ' sel' : ''}" data-period="7">7日</div>
-      <div class="stats-tab${days === 30 ? ' sel' : ''}" data-period="30">30日</div>
-      <div class="stats-tab${days === 90 ? ' sel' : ''}" data-period="90">90日</div>
-    </div>`;
-
-  const filterNote = isFiltered
-    ? `<div class="stats-filter-note">🔍 絞り込み適用中の集計です</div>`
-    : '';
-
-  if (!s.total) {
-    return `<div class="stats">
-      <div class="stats-head">
-        <div class="stats-title">📊 ${periodLabel}の統計</div>
-      </div>
-      ${tabsHtml}
-      <div class="stats-empty">${periodLabel}の記録は${isFiltered ? '該当なし' : 'まだありません'}</div>
-      ${filterNote}
-    </div>`;
-  }
-
-  const barRow = (lbl, pct, val) => `
-    <div class="stats-bar-row">
-      <span class="stats-bar-lbl">${lbl}</span>
-      <span class="stats-bar"><span class="stats-bar-fill" style="width:${pct}%"></span></span>
-      <span class="stats-bar-val">${val}</span>
-    </div>`;
-
-  return `<div class="stats">
-    <div class="stats-head">
-      <div class="stats-title">📊 ${periodLabel}の統計</div>
-      <div class="stats-period">${s.total}件の記録</div>
-    </div>
-    ${tabsHtml}
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-lbl">休憩確保率</div>
-        <div class="stat-val">${s.breakRate}<span style="font-size:12px;">%</span></div>
-        ${s.breakShortCount ? `<div class="stat-sub">不足時の平均 ${s.avgBreakShort}分</div>` : ''}
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">人手不足の頻度</div>
-        <div class="stat-val">${s.staffShortRate}<span style="font-size:12px;">%</span></div>
-        <div class="stat-sub">配置「不足」の割合</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">課題ありの割合</div>
-        <div class="stat-val">${s.commBadRate}<span style="font-size:12px;">%</span></div>
-        <div class="stat-sub">良好 ${s.commGoodRate}%</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-lbl">症例記録あり</div>
-        <div class="stat-val">${s.caseRate}<span style="font-size:12px;">%</span></div>
-        <div class="stat-sub">気になった症例の頻度</div>
-      </div>
-    </div>
-    <div class="stats-bar-wrap">
-      ${barRow('日勤', Math.round(s.byShift.day / s.total * 100), s.byShift.day + '件')}
-      ${barRow('夜勤', Math.round(s.byShift.night / s.total * 100), s.byShift.night + '件')}
-    </div>
-    ${filterNote}
-  </div>`;
+// ------------ History ------------
+function getActiveDays(filterSel) {
+  const a = $(`${filterSel} .chip[data-active="true"]`);
+  return a ? parseInt(a.dataset.days, 10) : 7;
+}
+function filterByDays(records, days) {
+  if (!days || days <= 0) return [...records].sort((a,b) => b.saved_at_ms - a.saved_at_ms);
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return records.filter(r => r.saved_at_ms >= cutoff)
+    .sort((a,b) => b.saved_at_ms - a.saved_at_ms);
 }
 
-// フィルタロジック
-function applyFilters(recs) {
-  const q = $('hist-search').value.trim().toLowerCase();
-  const f = state.filters;
-
-  return recs.filter(r => {
-    if (f.shift.length && !f.shift.includes(r.shift)) return false;
-    if (f.staff.length && !f.staff.includes(r.staffLbl)) return false;
-    if (f.break.length && !f.break.includes(r.breakS)) return false;
-    if (f.comm.length && !f.comm.includes(r.commS)) return false;
-    if (f.case.length && !f.case.includes(r.caseP)) return false;
-
-    if (q) {
+// 共通フィルタ適用（配列が渡された場合はOR条件、空配列は「絞り込みなし」）
+function applyFilters(records, f) {
+  const has = arr => Array.isArray(arr) && arr.length > 0;
+  return records.filter(r => {
+    if (has(f.shift) && !f.shift.includes(r.shift)) return false;
+    if (has(f.break_secured) && !f.break_secured.includes(r.workload.break_secured)) return false;
+    if (has(f.team_state)) {
+      const vals = [r.team_state.team_collab, r.team_state.external_collab, r.team_state.psych_safety];
+      if (!f.team_state.some(v => vals.includes(v))) return false;
+    }
+    if (has(f.patient_care)) {
+      const vals = [r.patient_care.hospitality, r.patient_care.wait_care, r.patient_care.anxiety_relief];
+      if (!f.patient_care.some(v => vals.includes(v))) return false;
+    }
+    if (has(f.case_exists) && !f.case_exists.includes(r.case.exists)) return false;
+    if (has(f.share)) {
+      const label = (r.share && r.share.trim()) ? "あり" : "なし";
+      if (!f.share.includes(label)) return false;
+    }
+    if (f.q) {
+      const q = f.q.toLowerCase();
       const text = [
-        r.author, r.date, r.shift, r.pfNote, r.free,
-        ...(r.commNotes || []).map(n => `${n.targets} ${n.note}`),
-        ...(r.cases || []).map(c => `${c.transport} ${c.patientId} ${c.note}`)
-      ].join(' ').toLowerCase();
+        r.reporter, r.share,
+        r.team_state.team_collab_note, r.team_state.external_collab_note, r.team_state.psych_safety_note,
+        r.patient_care.comment,
+        r.case.type, r.case.case_id, r.case.content,
+        r.workload.no_help_reason,
+      ].filter(Boolean).join(" ").toLowerCase();
       if (!text.includes(q)) return false;
     }
     return true;
   });
 }
 
-function buildHistList() {
-  const recs = getRecs();
-  const filtered = applyFilters(recs);
-  const body = $('m-hist-body');
+function readHistFilters() {
+  return {
+    shift: getSelectedChipValues("hist", "shift"),
+    break_secured: getSelectedChipValues("hist", "break_secured"),
+    team_state: getSelectedChipValues("hist", "team_state"),
+    patient_care: getSelectedChipValues("hist", "patient_care"),
+    case_exists: getSelectedChipValues("hist", "case_exists"),
+    share: getSelectedChipValues("hist", "share"),
+    q: $("#histFreeSearch").value.trim(),
+  };
+}
+function readStatsFilters() {
+  return {
+    shift: getSelectedChipValues("stats", "shift"),
+    break_secured: getSelectedChipValues("stats", "break_secured"),
+    team_state: getSelectedChipValues("stats", "team_state"),
+    patient_care: getSelectedChipValues("stats", "patient_care"),
+    case_exists: getSelectedChipValues("stats", "case_exists"),
+    share: getSelectedChipValues("stats", "share"),
+    q: $("#statsFreeSearch").value.trim(),
+  };
+}
 
-  // フィルタが適用されているか判定
-  const f = state.filters;
-  const hasFilter = !!(
-    $('hist-search').value.trim() ||
-    f.shift.length || f.staff.length || f.break.length || f.comm.length || f.case.length
-  );
+function ratingColor(r) {
+  return r === "良い" ? "var(--good)" : r === "普通" ? "var(--mid)" : r === "悪い" ? "var(--bad)" : "var(--line-strong)";
+}
+function ratingDot(r) {
+  const c = ratingColor(r);
+  return `<span class="inline-block w-2 h-2 rounded-full" style="background:${c}"></span>`;
+}
 
-  // 統計はフィルタ結果に対して計算する
-  const statsHtml = renderStats(filtered, hasFilter);
+function renderHistory() {
+  const days = getActiveDays("#histFilter");
+  const baseRecords = filterByDays(loadAll(), days);
+  const filters = readHistFilters();
+  const records = applyFilters(baseRecords, filters);
+  const list = $("#histList");
 
-  $('hist-count').textContent = `(${filtered.length}/${recs.length}件)`;
+  const activeFilterCount = Object.entries(filters).filter(([k,v]) => Array.isArray(v) ? v.length > 0 : (v && v !== "")).length;
+  const filterNote = activeFilterCount
+    ? `<div class="text-[11px] text-[var(--muted)] px-1 mb-1">${records.length}件表示（${baseRecords.length}件中 / ${activeFilterCount}項目で絞り込み中）</div>`
+    : `<div class="text-[11px] text-[var(--muted)] px-1 mb-1">${records.length}件</div>`;
 
-  if (!recs.length) {
-    body.innerHTML = statsHtml + `<p class="empty-hist">記録がまだありません</p>`;
-    attachStatsTabHandlers();
-    return;
-  }
-
-  if (!filtered.length) {
-    body.innerHTML = statsHtml + `<p class="empty-hist">該当する記録が見つかりません</p>`;
-    attachStatsTabHandlers();
-    return;
-  }
-
-  const listHtml = filtered.map(r => {
-    const idx = recs.indexOf(r);
-    const shiftBadge = r.shift === '日勤' ? 'b-am' : 'b-bl';
-    const commBadge = { '良好': 'b-gn', '普通': 'b-gy', '課題あり': 'b-rd' }[r.commS] || 'b-gy';
-    return `
-      <div class="hi" data-idx="${idx}">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div class="hi-date">${esc(r.date)} ${esc(r.time || '')} <span class="badge ${shiftBadge}">${esc(r.shift)}</span></div>
-          <span style="font-size:11px;color:#aaa;">詳細 ›</span>
-        </div>
-        <div class="hi-meta">入力者：${esc(r.author || '—')} ／ 看護師 ${esc(r.nurseN)}名（${esc(r.staffLbl)}）</div>
-        <div class="hi-meta">休憩：${esc(r.breakS)}${r.brMin ? `（${esc(r.brMin)}分不足）` : ''} ／ <span class="badge ${commBadge}" style="font-size:10px;padding:1px 6px;">${esc(r.commS)}</span>${r.caseP === 'yes' ? ' <span class="badge b-rd" style="font-size:10px;padding:1px 6px;">症例あり</span>' : ''}</div>
+  if (!records.length) {
+    list.innerHTML = `
+      ${filterNote}
+      <div class="card p-8 text-center">
+        <div class="text-[13px] text-[var(--muted)]">該当する記録はありません</div>
       </div>`;
-  }).join('');
-
-  body.innerHTML = statsHtml + listHtml;
-
-  attachStatsTabHandlers();
-
-  $$('.hi', body).forEach(el => {
-    on(el, () => openDetail(parseInt(el.dataset.idx, 10)));
-  });
-}
-
-// 期間切り替えタブのイベント登録（innerHTML 更新のたびに呼び直す）
-function attachStatsTabHandlers() {
-  $$('.stats-tab').forEach(tab => {
-    on(tab, () => {
-      const p = parseInt(tab.dataset.period, 10);
-      if (p && p !== state.statsPeriod) {
-        state.statsPeriod = p;
-        buildHistList();
-      }
-    });
-  });
-}
-
-/* ============================================================
-   詳細表示
-   ============================================================ */
-function openDetail(idx) {
-  const r = getRecs()[idx];
-  if (!r) return;
-
-  $('m-detail-title').textContent = `${r.date} ${r.time || ''}`;
-  const commBadge = { '良好': 'b-gn', '普通': 'b-gy', '課題あり': 'b-rd' }[r.commS] || 'b-gy';
-
-  let pfHtml = '';
-  if ((r.pfTags && r.pfTags.length) || r.pfNote) {
-    pfHtml = `<div style="background:#f0faf4;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">
-      <div style="font-size:11px;color:#1e7e34;font-weight:600;margin-bottom:4px;">よかったこと</div>
-      ${(r.pfTags || []).map(t => `<span class="badge b-gn">${esc(t)}</span>`).join('')}
-      ${r.pfNote ? `<div style="margin-top:4px;">${esc(r.pfNote)}</div>` : ''}
-    </div>`;
+    return;
   }
 
-  const cnHtml = (r.commS === '課題あり' && r.commNotes && r.commNotes.length)
-    ? r.commNotes.map(n => `
-        <div style="background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">
-          <span class="badge b-bl">${esc(n.targets || '対象未選択')}</span>
-          ${n.note ? `<div style="margin-top:4px;">${esc(n.note)}</div>` : ''}
-        </div>`).join('')
-    : '';
+  const caseTypeBadge = (t) => {
+    const map = {
+      "救急車": "background:#fee2e2;color:#991b1b",
+      "ウォークイン": "background:#dbeafe;color:#1e40af",
+      "その他": "background:#f3f4f6;color:#374151",
+    };
+    return `<span class="badge" style="${map[t] || map['その他']}">${t || "区分未設定"}</span>`;
+  };
 
-  const csHtml = r.caseP === 'no'
-    ? '<span style="color:#888;font-size:13px;">なし</span>'
-    : (r.cases || []).map((c, i) => `
-        <div style="background:#f7f9fc;border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:13px;">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap;">
-            <span style="font-weight:600;color:#1a5fa8;">症例${i + 1}</span>
-            ${c.transport ? `<span class="badge b-bl">${esc(c.transport)}</span>` : ''}
-            ${c.patientId ? `<span style="color:#888;">ID: ${esc(c.patientId)}</span>` : ''}
+  list.innerHTML = filterNote + records.map(r => {
+    const shiftBadge = r.shift === "夜勤"
+      ? `<span class="badge badge-night">🌙 夜勤</span>`
+      : `<span class="badge badge-day">☀ 日勤</span>`;
+    const breakBad = r.workload.break_secured === "確保できなかった";
+    const team = r.team_state;
+    const pat = r.patient_care;
+    const hasCase = r.case && r.case.exists === "あり";
+    return `
+      <div class="hist-card">
+        <div class="flex items-start justify-between gap-3 mb-2">
+          <div>
+            <div class="flex items-center gap-2 mb-1 flex-wrap">
+              ${shiftBadge}
+              ${breakBad ? `<span class="badge" style="background:#fef2f2;color:#b91c1c">休憩未確保</span>` : ""}
+              ${hasCase ? `<span class="badge" style="background:#eef4fb;color:#1b3a6b">📋 症例あり</span>` : ""}
+            </div>
+            <div class="font-display font-bold text-[15px] text-[var(--navy-900)] num-tabular">${r.date}</div>
+            <div class="text-[11px] text-[var(--muted)] num-tabular">保存 ${r.saved_time} ・ ${escapeHtml(r.reporter || "(記録者未入力)")}</div>
           </div>
-          ${c.note ? `<div>${esc(c.note)}</div>` : ''}
-        </div>`).join('');
+          <div class="text-right">
+            <div class="text-[10px] text-[var(--muted)]">Ns / Dr</div>
+            <div class="text-[14px] font-bold num-tabular text-[var(--navy-800)]">${r.team.nurses} / ${r.team.doctors}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-3 pt-3 border-t border-[var(--line)]">
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(team.team_collab)} チーム連携 <span class="ml-auto font-semibold text-[var(--navy-800)]">${team.team_collab || "—"}</span></div>
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(team.external_collab)} 他機関連携 <span class="ml-auto font-semibold text-[var(--navy-800)]">${team.external_collab || "—"}</span></div>
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(team.psych_safety)} 心理的安全 <span class="ml-auto font-semibold text-[var(--navy-800)]">${team.psych_safety || "—"}</span></div>
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.hospitality)} 接遇 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.hospitality || "—"}</span></div>
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.wait_care)} 待ち配慮 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.wait_care || "—"}</span></div>
+          <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.anxiety_relief)} 不安軽減 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.anxiety_relief || "—"}</span></div>
+        </div>
+        ${breakBad ? `
+          <div class="mt-3 pt-3 border-t border-[var(--line)] text-[11px] text-[var(--muted)]">
+            不足 <span class="font-bold text-[var(--bad)] num-tabular">${r.workload.short_min}分</span> ／ ${r.workload.short_people}名
+            ${r.workload.help_requested ? ` ／ 応援要請: <span class="font-semibold text-[var(--navy-800)]">${r.workload.help_requested}</span>` : ""}
+          </div>` : ""}
+        ${pat.comment ? `<div class="mt-2 text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md"><span class="font-semibold">患者家族コメント</span><br>${escapeHtml(pat.comment)}</div>` : ""}
+        ${hasCase ? `
+          <div class="mt-3 pt-3 border-t border-[var(--line)]">
+            <div class="flex items-center gap-2 mb-2 flex-wrap">
+              <span class="text-[11px] font-semibold text-[var(--navy-700)]">📋 振り返り症例</span>
+              ${caseTypeBadge(r.case.type)}
+              ${r.case.case_id ? `<span class="text-[11px] text-[var(--muted)]">ID: <span class="font-semibold text-[var(--navy-800)]">${escapeHtml(r.case.case_id)}</span></span>` : ""}
+            </div>
+            ${r.case.content ? `<div class="p-3 rounded-lg bg-[var(--soft-info)] text-[12px] text-[var(--navy-800)] leading-relaxed whitespace-pre-wrap">${escapeHtml(r.case.content)}</div>` : `<div class="text-[11px] text-[var(--muted)] italic">（内容の記載なし）</div>`}
+          </div>` : ""}
+        ${r.share ? `<div class="mt-2 text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md"><span class="font-semibold">💬 共有事項</span><br>${escapeHtml(r.share)}</div>` : ""}
+      </div>`;
+  }).join("");
+}
 
-  $('m-detail-body').innerHTML = `
-    <div class="ds"><div class="dst">基本情報</div>
-      <div class="dr"><span class="dl">入力者</span><span class="dv">${esc(r.author || '—')}</span></div>
-      <div class="dr"><span class="dl">勤務区分</span><span class="dv">${esc(r.shift)}</span></div>
-      <div class="dr"><span class="dl">看護師人数</span><span class="dv">${esc(r.nurseN)}名（${esc(r.staffLbl)}）</span></div>
-      <div class="dr"><span class="dl">休憩確保</span><span class="dv">${esc(r.breakS)}${r.brMin ? ` (${esc(r.brMin)}分不足${r.brStaff ? ` / ${esc(r.brStaff)}名` : ''})` : ''}</span></div>
-      ${r.supportS ? `<div class="dr"><span class="dl">病棟・他部署応援</span><span class="dv">${esc(r.supportS)}${r.supReason ? ` / ${esc(r.supReason)}` : ''}</span></div>` : ''}
-    </div>
-    <div class="ds"><div class="dst">コミュニケーション・患者対応</div>
-      <div class="dr"><span class="dl">評価</span><span class="dv"><span class="badge ${commBadge}">${esc(r.commS)}</span></span></div>
-      ${pfHtml}${cnHtml}
-    </div>
-    <div class="ds"><div class="dst">気になった症例</div>${csHtml}</div>
-    ${r.free ? `<div class="ds"><div class="dst">共有したいこと</div><div style="font-size:13px;white-space:pre-wrap;">${esc(r.free)}</div></div>` : ''}
-    <div class="btn-row">
-      <button class="b-edit" id="det-edit">✏️ 編集する</button>
-      <button class="b-del" id="det-del">🗑 削除する</button>
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[c]));
+}
+
+// ------------ Stats ------------
+function rateToNum(r) {
+  return r === "良い" ? 3 : r === "普通" ? 2 : r === "悪い" ? 1 : null;
+}
+function avg(arr) {
+  const v = arr.filter(x => x !== null && !isNaN(x));
+  return v.length ? (v.reduce((a,b)=>a+b,0) / v.length) : null;
+}
+
+function renderStats() {
+  const days = getActiveDays("#statsFilter");
+  const scope = $("#statsScope").value;
+  const filters = readStatsFilters();
+  const baseRecords = filterByDays(loadAll(), days);
+  const records = applyFilters(baseRecords, filters);
+  const el = $("#statsContent");
+
+  const activeFilterCount = Object.entries(filters).filter(([k,v]) => Array.isArray(v) ? v.length > 0 : (v && v !== "")).length;
+  const filterNote = activeFilterCount
+    ? `<div class="text-[11px] text-[var(--muted)] px-1 mb-3">対象: ${records.length}件（全${baseRecords.length}件中 / ${activeFilterCount}項目で絞り込み中）</div>`
+    : `<div class="text-[11px] text-[var(--muted)] px-1 mb-3">対象: ${records.length}件</div>`;
+
+  if (!records.length) {
+    el.innerHTML = `
+      ${filterNote}
+      <div class="card p-8 text-center">
+        <div class="text-[13px] text-[var(--muted)]">該当するデータはありません</div>
+      </div>`;
+    return;
+  }
+
+  const teamMetrics = [
+    { key: "team_collab", label: "チーム連携", group: "team_state" },
+    { key: "external_collab", label: "他機関連携", group: "team_state" },
+    { key: "psych_safety", label: "心理的安全性", group: "team_state" },
+  ];
+  const patientMetrics = [
+    { key: "hospitality", label: "接遇", group: "patient_care" },
+    { key: "wait_care", label: "待ち時間への配慮", group: "patient_care" },
+    { key: "anxiety_relief", label: "不安軽減", group: "patient_care" },
+  ];
+  const addAvg = m => ({
+    ...m,
+    avg: avg(records.map(r => rateToNum(r[m.group][m.key])))
+  });
+  const teamAvgs = teamMetrics.map(addAvg);
+  const patientAvgs = patientMetrics.map(addAvg);
+
+  // 休憩関連の集計
+  const breakSecuredCount = records.filter(r => r.workload.break_secured === "確保できた").length;
+  const breakMissCount = records.filter(r => r.workload.break_secured === "確保できなかった").length;
+  const breakSecuredRate = records.length ? (breakSecuredCount / records.length) * 100 : 0;
+  const breakMissRate = records.length ? (breakMissCount / records.length) * 100 : 0;
+  const totalShortMin = records.reduce((s, r) => s + (r.workload.short_min || 0), 0);
+  const totalShortPeople = records.reduce((s, r) => s + (r.workload.short_people || 0), 0);
+  // 応援要請の内訳（未確保時のみ）
+  const helpYesCount = records.filter(r => r.workload.break_secured === "確保できなかった" && r.workload.help_requested === "あり").length;
+  const helpNoCount = records.filter(r => r.workload.break_secured === "確保できなかった" && r.workload.help_requested === "なし").length;
+
+  const showSummary = scope === "all" || scope === "summary";
+  const showBreak = scope === "all" || scope === "break";
+  const showTeam = scope === "all" || scope === "team_state";
+  const showPatient = scope === "all" || scope === "patient_care";
+
+  const metricBlock = (title, icon, arr) => `
+    <div class="card p-5 mb-4">
+      <div class="flex items-center gap-2 mb-3">
+        ${icon}
+        <div class="text-[12px] font-semibold text-[var(--navy-700)]">${title}</div>
+      </div>
+      <div class="space-y-3">
+        ${arr.map(m => {
+          const v = m.avg;
+          const pct = v ? (v/3)*100 : 0;
+          const color = v >= 2.5 ? "var(--good)" : v >= 1.5 ? "var(--mid)" : v ? "var(--bad)" : "var(--line-strong)";
+          return `
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <span class="text-[12px] font-semibold text-[var(--navy-800)]">${m.label}</span>
+                <span class="text-[13px] font-bold num-tabular" style="color:${color}">${v !== null ? v.toFixed(2) : "—"}</span>
+              </div>
+              <div class="score-bar">
+                <div style="width:${pct}%; background:${color}"></div>
+              </div>
+            </div>`;
+        }).join("")}
+      </div>
     </div>`;
 
-  on($('det-edit'), () => startEdit(idx));
-  on($('det-del'), () => askDelete(idx));
+  const statsIcon = `<svg viewBox="0 0 24 24" width="14" height="14" class="ico text-[var(--navy-700)]"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>`;
 
-  $('m-detail').classList.add('open');
-}
+  let html = "";
 
-/* ============================================================
-   編集モード開始
-   ============================================================ */
-function startEdit(idx) {
-  const r = getRecs()[idx];
-  if (!r) return;
-
-  resetForm();
-  state.editIdx = idx;
-
-  selectShift(r.shift === '日勤' ? 'day' : 'night');
-  $('nurse-n').value = r.nurseN || '';
-  const staffMap = { '十分': 'enough', '普通': 'normal', '不足': 'short' };
-  if (staffMap[r.staffLbl]) selectStaff(staffMap[r.staffLbl]);
-
-  selectBreak(r.breakS === '確保できた' ? 'ok' : 'ng');
-  if (r.brMin) $('br-min').value = r.brMin;
-  if (r.brStaff) $('br-staff').value = r.brStaff;
-  if (r.supportS) selectSupport(r.supportS === 'あり' ? 'yes' : 'no');
-  if (r.supReason) $('sup-reason').value = r.supReason;
-
-  const commMap = { '良好': 'good', '普通': 'normal', '課題あり': 'bad' };
-  if (commMap[r.commS]) selectComm(commMap[r.commS]);
-
-  // よかったことタグ復元
-  const pfSet = new Set(r.pfTags || []);
-  $$('#pf-chips .mchip').forEach(el => el.classList.toggle('sel', pfSet.has(el.dataset.pf)));
-  if (r.pfNote) $('pf-note').value = r.pfNote;
-
-  // 「課題あり」コメントの復元
-  if (r.commS === '課題あり' && r.commNotes) {
-    $('comm-con').innerHTML = '';
-    state.commSeq = 0;
-    r.commNotes.forEach(n => addCommBlock(n));
+  // サマリー
+  if (showSummary) {
+    html += `
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="stat-tile">
+          <div class="stat-label">記録数</div>
+          <div class="stat-value num-tabular">${records.length}<span class="stat-unit">件</span></div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-label">休憩確保率</div>
+          <div class="stat-value num-tabular" style="color: ${breakSecuredRate >= 75 ? 'var(--good)' : breakSecuredRate >= 50 ? 'var(--mid)' : 'var(--bad)'}">${breakSecuredRate.toFixed(0)}<span class="stat-unit">%</span></div>
+        </div>
+        <div class="stat-tile">
+          <div class="stat-label">休憩未確保</div>
+          <div class="stat-value num-tabular" style="color: ${breakMissCount > 0 ? 'var(--bad)' : 'var(--muted)'}">${breakMissCount}<span class="stat-unit">件</span></div>
+        </div>
+      </div>`;
   }
 
-  // 症例の復元
-  selectCaseP(r.caseP || 'no');
-  if (r.caseP === 'yes' && r.cases) {
-    $('cases-con').innerHTML = '';
-    state.caseSeq = 0;
-    r.cases.forEach(c => addCaseBlock(c));
+  // 休憩や時間外 ― 未確保時の状況を可視化
+  if (showBreak) {
+    const securedPct = breakSecuredRate;
+    const missPct = breakMissRate;
+
+    // 未確保時のみを抽出
+    const missRecords = records.filter(r => r.workload.break_secured === "確保できなかった");
+    const avgShortMin = missRecords.length ? (missRecords.reduce((s, r) => s + (r.workload.short_min || 0), 0) / missRecords.length) : 0;
+    const avgShortPeople = missRecords.length ? (missRecords.reduce((s, r) => s + (r.workload.short_people || 0), 0) / missRecords.length) : 0;
+
+    // 不足時間の分布
+    const bucket10_30 = missRecords.filter(r => r.workload.short_min > 0 && r.workload.short_min <= 30).length;
+    const bucket30_60 = missRecords.filter(r => r.workload.short_min > 30 && r.workload.short_min <= 60).length;
+    const bucket60plus = missRecords.filter(r => r.workload.short_min > 60).length;
+    const maxBucket = Math.max(bucket10_30, bucket30_60, bucket60plus, 1);
+
+    // 未確保記録ピックアップ（直近5件）
+    const recentMiss = [...missRecords].sort((a,b) => b.saved_at_ms - a.saved_at_ms).slice(0, 5);
+
+    html += `
+      <div class="card p-5 mb-4">
+        <div class="flex items-center gap-2 mb-3">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="ico text-[var(--navy-700)]"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+          <div class="text-[12px] font-semibold text-[var(--navy-700)]">休憩や時間外</div>
+        </div>
+
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-1.5">
+            <span class="text-[12px] font-semibold text-[var(--navy-800)]">休憩確保率</span>
+            <span class="text-[14px] font-bold num-tabular" style="color:${securedPct >= 75 ? 'var(--good)' : securedPct >= 50 ? 'var(--mid)' : 'var(--bad)'}">${securedPct.toFixed(1)}%</span>
+          </div>
+          <div class="flex h-2.5 rounded-full overflow-hidden bg-[var(--line)]">
+            <div style="width:${securedPct}%; background: var(--good)"></div>
+            <div style="width:${missPct}%; background: var(--bad)"></div>
+          </div>
+          <div class="flex justify-between text-[10px] text-[var(--muted)] mt-1.5">
+            <span>● 確保 ${breakSecuredCount}件</span>
+            <span>● 未確保 ${breakMissCount}件</span>
+          </div>
+        </div>
+
+        ${breakMissCount > 0 ? `
+          <div class="pt-3 border-t border-[var(--line)]">
+            <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">未確保時の状況（${breakMissCount}件）</div>
+
+            <div class="grid grid-cols-2 gap-2 mb-3">
+              <div class="p-2.5 rounded-lg bg-[var(--soft-info)]">
+                <div class="text-[10px] text-[var(--muted)]">1件あたり平均不足</div>
+                <div class="text-[17px] font-bold num-tabular text-[var(--navy-800)]">${avgShortMin.toFixed(0)}<span class="text-[11px] text-[var(--muted)] ml-0.5">分</span></div>
+              </div>
+              <div class="p-2.5 rounded-lg bg-[var(--soft-info)]">
+                <div class="text-[10px] text-[var(--muted)]">1件あたり平均人数</div>
+                <div class="text-[17px] font-bold num-tabular text-[var(--navy-800)]">${avgShortPeople.toFixed(1)}<span class="text-[11px] text-[var(--muted)] ml-0.5">名</span></div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">不足時間の分布</div>
+              <div class="space-y-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] text-[var(--muted)] w-[68px] flex-shrink-0">10〜30分</span>
+                  <div class="flex-1 h-5 rounded-md bg-[var(--line)] overflow-hidden relative">
+                    <div class="h-full" style="width:${(bucket10_30/maxBucket)*100}%; background: var(--mid)"></div>
+                  </div>
+                  <span class="text-[12px] font-bold num-tabular text-[var(--navy-800)] w-8 text-right">${bucket10_30}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] text-[var(--muted)] w-[68px] flex-shrink-0">30〜60分</span>
+                  <div class="flex-1 h-5 rounded-md bg-[var(--line)] overflow-hidden relative">
+                    <div class="h-full" style="width:${(bucket30_60/maxBucket)*100}%; background:#ea580c"></div>
+                  </div>
+                  <span class="text-[12px] font-bold num-tabular text-[var(--navy-800)] w-8 text-right">${bucket30_60}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] text-[var(--muted)] w-[68px] flex-shrink-0">60分〜</span>
+                  <div class="flex-1 h-5 rounded-md bg-[var(--line)] overflow-hidden relative">
+                    <div class="h-full" style="width:${(bucket60plus/maxBucket)*100}%; background: var(--bad)"></div>
+                  </div>
+                  <span class="text-[12px] font-bold num-tabular text-[var(--navy-800)] w-8 text-right">${bucket60plus}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">応援要請</div>
+              <div class="flex gap-2">
+                <div class="flex-1 p-2.5 rounded-lg bg-[var(--soft-info)]">
+                  <div class="text-[10px] text-[var(--muted)]">あり</div>
+                  <div class="text-[16px] font-bold num-tabular text-[var(--navy-800)]">${helpYesCount}<span class="text-[11px] text-[var(--muted)] ml-0.5">件</span></div>
+                </div>
+                <div class="flex-1 p-2.5 rounded-lg" style="background:#fef2f2">
+                  <div class="text-[10px] text-[var(--muted)]">なし</div>
+                  <div class="text-[16px] font-bold num-tabular" style="color:var(--bad)">${helpNoCount}<span class="text-[11px] text-[var(--muted)] ml-0.5">件</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">未確保だった勤務（直近${recentMiss.length}件）</div>
+              <div class="space-y-1.5">
+                ${recentMiss.map(r => `
+                  <div class="flex items-center gap-2 p-2 rounded-md bg-[#fff7ed]">
+                    <span class="badge ${r.shift === '夜勤' ? 'badge-night' : 'badge-day'}" style="flex-shrink:0">${r.shift === '夜勤' ? '🌙 夜勤' : '☀ 日勤'}</span>
+                    <span class="text-[11px] num-tabular text-[var(--navy-800)] font-semibold">${r.date}</span>
+                    <span class="text-[11px] text-[var(--muted)] flex-shrink-0">${escapeHtml(r.reporter || '')}</span>
+                    <span class="ml-auto text-[11px] num-tabular font-bold" style="color:var(--bad)">${r.workload.short_min}分／${r.workload.short_people}名</span>
+                    ${r.workload.help_requested === 'なし' ? `<span class="badge" style="background:#fef2f2;color:#b91c1c;flex-shrink:0">応援なし</span>` : ''}
+                  </div>
+                `).join("")}
+              </div>
+              ${missRecords.some(r => r.workload.no_help_reason) ? `
+                <div class="mt-2 p-2.5 rounded-lg border border-[var(--line)]">
+                  <div class="text-[10px] font-semibold text-[var(--muted)] mb-1">応援を要請しなかった理由（記載あり）</div>
+                  ${missRecords.filter(r => r.workload.no_help_reason).slice(0,3).map(r => `
+                    <div class="text-[11px] text-[var(--navy-800)] leading-relaxed py-1 border-b border-[var(--line)] last:border-b-0">・${escapeHtml(r.workload.no_help_reason)} <span class="text-[10px] text-[var(--muted)] ml-1 num-tabular">${r.date}</span></div>
+                  `).join("")}
+                </div>` : ""}
+            </div>
+          </div>` : `
+          <div class="pt-3 border-t border-[var(--line)] text-center text-[12px] text-[var(--muted)]">
+            ✓ この期間に休憩未確保の記録はありません
+          </div>`}
+      </div>`;
   }
 
-  $('free').value = r.free || '';
-  $('author').value = r.author || '';
-
-  $('m-detail').classList.remove('open');
-  $('m-hist').classList.remove('open');
-  $('edit-banner').classList.add('show');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-/* ============================================================
-   削除
-   ============================================================ */
-function askDelete(idx) {
-  state.delIdx = idx;
-  $('m-cfm').classList.add('open');
-}
-
-on($('btn-cfm-del'), () => {
-  if (state.delIdx === null) return;
-  const delBtn = $('btn-cfm-del');
-  if (delBtn.disabled) return;
-  delBtn.disabled = true;
-  delBtn.style.opacity = '0.5';
-  try {
-    const recs = getRecs();
-    recs.splice(state.delIdx, 1);
-    if (!setRecs(recs)) return;
-    refreshAuthorSuggestions();
-    state.delIdx = null;
-    $('m-cfm').classList.remove('open');
-    $('m-detail').classList.remove('open');
-    showToast('削除しました');
-    buildHistList();
-  } finally {
-    delBtn.disabled = false;
-    delBtn.style.opacity = '';
+  // チームの状態
+  if (showTeam) {
+    html += metricBlock("チームの状態", statsIcon, teamAvgs);
   }
-});
 
-/* ============================================================
-   モーダル汎用閉じる
-   ============================================================ */
-$$('[data-close]').forEach(btn => {
-  on(btn, () => $(btn.dataset.close).classList.remove('open'));
-});
+  // 患者家族
+  if (showPatient) {
+    html += metricBlock("患者家族への関わり", statsIcon, patientAvgs);
+  }
 
-// モーダル背景クリックで閉じる（操作要素は閉じない）
-$$('.mbg, .cfmbg').forEach(bg => {
-  bg.addEventListener('click', (e) => {
-    if (e.target === bg) bg.classList.remove('open');
+  el.innerHTML = filterNote + html;
+}
+
+// ------------ Export / PIN ------------
+function setupExport() {
+  $("#exportBtn").addEventListener("click", () => {
+    $("#pinInput").value = "";
+    $("#pinError").classList.add("hidden");
+    updatePinDots("");
+    openModal("pinModal");
+    setTimeout(() => $("#pinInput").focus(), 100);
   });
-});
+  $("#pinInput").addEventListener("input", (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0,4);
+    e.target.value = v;
+    updatePinDots(v);
+    $("#pinError").classList.add("hidden");
+  });
+  $("#pinConfirmBtn").addEventListener("click", () => {
+    const v = $("#pinInput").value;
+    if (v === PIN_CODE) {
+      closeModal("pinModal");
+      doExport();
+    } else {
+      $("#pinError").classList.remove("hidden");
+    }
+  });
+}
+function updatePinDots(v) {
+  $$("#pinDots .pin-dot").forEach((d, i) => {
+    d.dataset.filled = v.length > i ? "true" : "false";
+    d.textContent = v[i] ? "●" : "";
+  });
+}
 
-/* ============================================================
-   初回起動時
-   ============================================================ */
-checkStorageUsage();
-refreshAuthorSuggestions();
+function doExport() {
+  const records = loadAll();
+  if (!records.length) {
+    toast("エクスポートするデータがありません");
+    return;
+  }
+  const headers = [
+    "id","日付","保存時刻","勤務帯","記録者","看護師数","医師数",
+    "休憩確保","不足時間(分)","対象人数","応援要請","応援なし理由",
+    "チーム連携","チーム連携_場面","他機関連携","他機関連携_場面","心理的安全性","心理的安全性_場面",
+    "接遇","待ち時間配慮","不安軽減","患者家族コメント",
+    "ケース有無","搬送区分","ケースID","ケース内容","共有事項"
+  ];
+  const rows = records.map(r => [
+    r.id, r.date, r.saved_time, r.shift || "", r.reporter || "",
+    r.team.nurses, r.team.doctors,
+    r.workload.break_secured || "", r.workload.short_min || 0, r.workload.short_people || 0,
+    r.workload.help_requested || "", r.workload.no_help_reason || "",
+    r.team_state.team_collab || "", r.team_state.team_collab_note || "",
+    r.team_state.external_collab || "", r.team_state.external_collab_note || "",
+    r.team_state.psych_safety || "", r.team_state.psych_safety_note || "",
+    r.patient_care.hospitality || "", r.patient_care.wait_care || "", r.patient_care.anxiety_relief || "", r.patient_care.comment || "",
+    r.case.exists || "", r.case.type || "", r.case.case_id || "", r.case.content || "",
+    r.share || ""
+  ]);
+  const csv = [headers, ...rows].map(row =>
+    row.map(cell => {
+      const s = String(cell ?? "");
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+    }).join(",")
+  ).join("\r\n");
+
+  // BOM for Excel JP
+  const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const d = new Date();
+  const z = n => String(n).padStart(2,"0");
+  a.href = url;
+  a.download = `ER_reflection_${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}_${z(d.getHours())}${z(d.getMinutes())}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("CSVをダウンロードしました");
+}
+
+// ------------ Go ------------
+document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
 </html>
