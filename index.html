@@ -785,26 +785,25 @@
             <strong>個人が特定されないように入力してください。</strong>
           </div>
         </div>
-        <div class="space-y-3">
-          <div>
-            <label class="lbl">搬送区分</label>
-            <select id="f_case_type" class="fld">
-              <option value="">選択してください</option>
-              <option value="救急車">救急車</option>
-              <option value="ウォークイン">ウォークイン</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-          <div>
-            <label class="lbl">ID</label>
-            <input type="text" id="f_case_id" class="fld" placeholder="例：12345678" />
-          </div>
-          <div>
-            <label class="lbl">内容</label>
-            <textarea id="f_case_content" class="fld" placeholder="主訴・経過・学びなど"></textarea>
-          </div>
-        </div>
+        <div id="caseItems" class="space-y-3"></div>
+        <button type="button" id="addCaseBtn" class="btn-secondary w-full mt-3 text-[13px] flex items-center justify-center gap-1.5">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="ico"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          症例を追加
+        </button>
       </div>
+    </div>
+
+    <!-- セクション3.5：本日の成功事例（任意・複数件） -->
+    <div class="card p-5">
+      <div class="sec-head">
+        <div class="sec-title">本日の成功事例<span class="text-[12px] font-normal text-[var(--muted)] ml-2">任意</span></div>
+        <p class="text-[11px] text-[var(--muted)] mt-1 leading-relaxed">事例があれば記載</p>
+      </div>
+      <div id="successCases" class="space-y-3"></div>
+      <button type="button" id="addSuccessCaseBtn" class="btn-secondary w-full mt-3 text-[13px] flex items-center justify-center gap-1.5">
+        <svg viewBox="0 0 24 24" width="14" height="14" class="ico"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+        成功事例を追加
+      </button>
     </div>
 
     <!-- セクション4 -->
@@ -813,6 +812,15 @@
         <div class="sec-title">共有事項<span class="text-[12px] font-normal text-[var(--muted)] ml-2">任意</span></div>
       </div>
       <textarea id="f_share" class="fld" placeholder="チームに共有したいこと、気づき、提案など"></textarea>
+    </div>
+
+    <!-- 編集中バナー -->
+    <div id="editBanner" class="hidden card p-3 flex items-center justify-between gap-2" style="background:#fef3c7;border-color:#fcd34d">
+      <div class="flex items-center gap-2 min-w-0">
+        <svg viewBox="0 0 24 24" width="18" height="18" class="ico" style="color:#92400e;flex-shrink:0"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span class="text-[12px] font-semibold" style="color:#92400e">既存の記録を編集中です</span>
+      </div>
+      <button type="button" id="cancelEditBtn" class="text-[12px] font-semibold px-3 py-1.5 rounded-md" style="background:#fff;color:#92400e;border:1px solid #fcd34d;flex-shrink:0">キャンセル</button>
     </div>
 
     <!-- Save button -->
@@ -888,10 +896,18 @@
       </div>
 
       <div class="filter-row">
+        <label class="lbl">本日の成功事例</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="success_exists" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
         <label class="lbl">共有事項</label>
         <div class="chip-group" data-filter-kind="hist" data-filter-key="share" data-mode="multi">
-          <button class="chip" data-val="あり">記載あり</button>
-          <button class="chip" data-val="なし">記載なし</button>
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
         </div>
       </div>
 
@@ -971,10 +987,18 @@
       </div>
 
       <div class="filter-row">
+        <label class="lbl">本日の成功事例</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="success_exists" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
         <label class="lbl">共有事項</label>
         <div class="chip-group" data-filter-kind="stats" data-filter-key="share" data-mode="multi">
-          <button class="chip" data-val="あり">記載あり</button>
-          <button class="chip" data-val="なし">記載なし</button>
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
         </div>
       </div>
 
@@ -1036,6 +1060,27 @@
     <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
       <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" id="postCloseBtn">閉じる</button>
       <button class="p-4 text-[var(--navy-800)] font-bold" id="postNewBtn">新規入力</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: DELETE CONFIRM ============ -->
+<div class="modal-backdrop" id="deleteModal">
+  <div class="modal">
+    <div class="p-5">
+      <div class="flex items-start gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background:#fef2f2;color:var(--bad)">
+          <svg viewBox="0 0 24 24" width="18" height="18" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </div>
+        <div>
+          <div class="font-display font-bold text-[16px] mb-1">この記録を削除しますか？</div>
+          <p class="text-[12px] text-[var(--muted)] leading-relaxed">削除した記録は元に戻せません。</p>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" onclick="closeModal('deleteModal')">キャンセル</button>
+      <button class="p-4 font-bold" id="confirmDeleteBtn" style="color:var(--bad)">削除する</button>
     </div>
   </div>
 </div>
@@ -1103,6 +1148,16 @@ let formState = {
   team_collab: null, external_collab: null, psych_safety: null,
   hospitality: null, wait_care: null, anxiety_relief: null,
 };
+// 編集中の記録ID（新規入力時はnull、編集中はそのID）
+let editingId = null;
+// 削除確認中のID
+let deletingId = null;
+// 成功事例の連番（DOM要素のid生成用）
+let successCaseSeq = 0;
+// 振り返りケースの連番
+let caseSeq = 0;
+// 統計のグラフモード（"bar" | "pie"）
+let statsChartMode = "bar";
 
 // ------------ Helpers ------------
 const $ = (s, r=document) => r.querySelector(s);
@@ -1142,11 +1197,139 @@ function init() {
   setupSaveFlow();
   setupExport();
   setupNotification();
+  setupSuccessCases();
+  setupCases();
   refreshReporterList();
   refreshNotificationBadge();
 
   renderHistory();
   renderStats();
+}
+
+// ------------ Success Cases (本日の成功事例) ------------
+function setupSuccessCases() {
+  $("#addSuccessCaseBtn").addEventListener("click", () => addSuccessCase());
+}
+
+function addSuccessCase(initial) {
+  const list = $("#successCases");
+  const seq = ++successCaseSeq;
+  const wrap = document.createElement("div");
+  wrap.className = "rounded-lg p-3 border border-[var(--line)] bg-[#fafbfc]";
+  wrap.dataset.successCase = String(seq);
+  const content = (initial && initial.content) || "";
+  wrap.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-[11px] font-bold text-[var(--navy-700)] num-tabular" data-success-num>事例 ${seq}</span>
+      <button type="button" class="text-[var(--muted)] p-1 -m-1" data-success-remove>
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>
+    <textarea class="fld" data-success-content placeholder="例：12誘導心電図のST上昇にいち早く気づけた、経過3人持ちを問題なく対応できた など">${escapeHtml(content)}</textarea>
+  `;
+  wrap.querySelector("[data-success-remove]").addEventListener("click", () => {
+    wrap.remove();
+    // 全件消えたらカウンタをリセット（次回追加時に「事例1」から始まる）
+    if ($$("#successCases [data-success-case]").length === 0) {
+      successCaseSeq = 0;
+    } else {
+      renumberSuccessCases();
+    }
+  });
+  list.appendChild(wrap);
+  return wrap;
+}
+
+function renumberSuccessCases() {
+  $$("#successCases [data-success-case]").forEach((el, i) => {
+    const numEl = el.querySelector("[data-success-num]");
+    if (numEl) numEl.textContent = `事例 ${i + 1}`;
+  });
+}
+
+function clearSuccessCases() {
+  $("#successCases").innerHTML = "";
+  successCaseSeq = 0;
+}
+
+function readSuccessCases() {
+  return $$("#successCases [data-success-case]").map(el => ({
+    content: el.querySelector("[data-success-content]").value.trim(),
+  })).filter(c => c.content); // 空の枠は除外
+}
+
+// ------------ Reflection Cases (振り返りケース：複数件) ------------
+function setupCases() {
+  $("#addCaseBtn").addEventListener("click", () => addCase());
+}
+
+function addCase(initial) {
+  const list = $("#caseItems");
+  const seq = ++caseSeq;
+  const wrap = document.createElement("div");
+  wrap.className = "rounded-lg p-3 border border-[var(--line)] bg-[#fafbfc]";
+  wrap.dataset.caseItem = String(seq);
+  const type = (initial && initial.type) || "";
+  const caseId = (initial && initial.case_id) || "";
+  const content = (initial && initial.content) || "";
+  wrap.innerHTML = `
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-[11px] font-bold text-[var(--navy-700)] num-tabular" data-case-num>症例 ${seq}</span>
+      <button type="button" class="text-[var(--muted)] p-1 -m-1" data-case-remove>
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      </button>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <label class="lbl">搬送区分</label>
+        <select class="fld" data-case-type>
+          <option value="">選択してください</option>
+          <option value="救急車" ${type === "救急車" ? "selected" : ""}>救急車</option>
+          <option value="ウォークイン" ${type === "ウォークイン" ? "selected" : ""}>ウォークイン</option>
+          <option value="その他" ${type === "その他" ? "selected" : ""}>その他</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">ID</label>
+        <input type="text" class="fld" data-case-id placeholder="例：12345678" value="${escapeHtml(caseId)}" />
+      </div>
+      <div>
+        <label class="lbl">内容</label>
+        <textarea class="fld" data-case-content placeholder="主訴・経過・学びなど">${escapeHtml(content)}</textarea>
+      </div>
+    </div>
+  `;
+  wrap.querySelector("[data-case-remove]").addEventListener("click", () => {
+    wrap.remove();
+    // 全件消えたらカウンタをリセット（次回追加時に「症例1」から始まる）
+    if ($$("#caseItems [data-case-item]").length === 0) {
+      caseSeq = 0;
+    } else {
+      renumberCases();
+    }
+  });
+  list.appendChild(wrap);
+  return wrap;
+}
+
+function renumberCases() {
+  $$("#caseItems [data-case-item]").forEach((el, i) => {
+    const numEl = el.querySelector("[data-case-num]");
+    if (numEl) numEl.textContent = `症例 ${i + 1}`;
+  });
+}
+
+function clearCases() {
+  $("#caseItems").innerHTML = "";
+  caseSeq = 0;
+}
+
+function readCases() {
+  return $$("#caseItems [data-case-item]").map(el => ({
+    type: el.querySelector("[data-case-type]").value,
+    case_id: el.querySelector("[data-case-id]").value.trim(),
+    content: el.querySelector("[data-case-content]").value.trim(),
+  })).filter(c => c.type || c.case_id || c.content);
 }
 
 // 記録者名の予測候補（過去記録から生成）
@@ -1279,10 +1462,14 @@ function handleConditionals(field, val) {
   }
   if (field === "case_exists") {
     $("#case_detail").dataset.show = (val === "あり") ? "true" : "false";
-    if (val !== "あり") {
-      $("#f_case_type").value = "";
-      $("#f_case_id").value = "";
-      $("#f_case_content").value = "";
+    if (val === "あり") {
+      // 「あり」初回選択時、まだ症例が1件もなければ自動で1件目を追加
+      if ($$("#caseItems [data-case-item]").length === 0) {
+        addCase();
+      }
+    } else {
+      // 「なし」の場合は全クリア
+      clearCases();
     }
   }
 }
@@ -1441,9 +1628,27 @@ function setupSaveFlow() {
   });
 
   $("#confirmSaveBtn").addEventListener("click", () => {
-    const record = buildRecord();
     const all = loadAll();
-    all.push(record);
+    if (editingId) {
+      // 既存記録の更新
+      const idx = all.findIndex(r => r.id === editingId);
+      const record = buildRecord();
+      if (idx >= 0) {
+        // 元のID・初回保存日時は維持し、更新時刻を別途記録
+        record.id = all[idx].id;
+        record.created_at_ms = all[idx].created_at_ms || all[idx].saved_at_ms;
+        record.updated_at_ms = Date.now();
+        all[idx] = record;
+      } else {
+        // ID不一致の場合は新規扱い
+        all.push(record);
+      }
+    } else {
+      // 新規追加
+      const record = buildRecord();
+      record.created_at_ms = record.saved_at_ms;
+      all.push(record);
+    }
     saveAll(all);
     refreshReporterList();
     refreshNotificationBadge();
@@ -1461,6 +1666,23 @@ function setupSaveFlow() {
     refreshNotificationBadge();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+
+  // 編集キャンセル
+  $("#cancelEditBtn").addEventListener("click", cancelEdit);
+
+  // 削除確認
+  $("#confirmDeleteBtn").addEventListener("click", () => {
+    if (deletingId) {
+      deleteRecord(deletingId);
+      deletingId = null;
+    }
+    closeModal("deleteModal");
+  });
+}
+
+function askDeleteRecord(id) {
+  deletingId = id;
+  openModal("deleteModal");
 }
 
 function buildRecord() {
@@ -1502,10 +1724,9 @@ function buildRecord() {
     },
     case: {
       exists: formState.case_exists,
-      type: formState.case_exists === "あり" ? $("#f_case_type").value : "",
-      case_id: formState.case_exists === "あり" ? $("#f_case_id").value.trim() : "",
-      content: formState.case_exists === "あり" ? $("#f_case_content").value.trim() : "",
+      items: formState.case_exists === "あり" ? readCases() : [],
     },
+    success_cases: readSuccessCases(),
     share: $("#f_share").value.trim(),
   };
 }
@@ -1523,21 +1744,158 @@ function resetForm() {
   $("#f_short_min").value = 0;
   $("#f_short_people").value = 1;
   $("#f_no_help_reason").value = "";
-  $("#f_case_type").value = "";
-  $("#f_case_id").value = "";
-  $("#f_case_content").value = "";
   $("#f_patient_comment").value = "";
   $("#f_share").value = "";
+  clearCases();
   $$("[data-note]").forEach(el => el.value = "");
   $$(".seg-btn").forEach(b => b.dataset.selected = "false");
   $("#break_detail").dataset.show = "false";
   $("#help_no_reason").dataset.show = "false";
   $("#case_detail").dataset.show = "false";
+  clearSuccessCases();
+  editingId = null;
+  updateSaveButtonLabel();
 }
 
 // ------------ Modal ------------
 function openModal(id) { $("#"+id).dataset.open = "true"; document.body.style.overflow="hidden"; }
 function closeModal(id) { $("#"+id).dataset.open = "false"; document.body.style.overflow=""; }
+
+// ------------ Edit Mode ------------
+function updateSaveButtonLabel() {
+  const btn = $("#saveBtn");
+  if (!btn) return;
+  const editing = !!editingId;
+  btn.innerHTML = editing
+    ? `<svg viewBox="0 0 24 24" width="18" height="18" class="ico"><path d="M20 6 9 17l-5-5"/></svg>修正を保存`
+    : `<svg viewBox="0 0 24 24" width="18" height="18" class="ico"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>振り返りを保存`;
+  // 編集中バナーの表示切替
+  const banner = $("#editBanner");
+  if (banner) banner.classList.toggle("hidden", !editing);
+}
+
+function loadRecordToForm(rec) {
+  // フォームを一度クリアしてから展開
+  resetForm();
+  editingId = rec.id;
+
+  // 基本情報
+  $("#f_date").value = rec.date || todayIso();
+  $("#f_nurses").value = (rec.team && rec.team.nurses) || 0;
+  $("#f_doctors").value = (rec.team && rec.team.doctors) || 0;
+  $("#f_reporter").value = rec.reporter || "";
+
+  // セグメント値の復元ヘルパー
+  const setSeg = (field, val) => {
+    if (!val) return;
+    const group = $(`[data-seg-field="${field}"]`);
+    if (!group) return;
+    const btn = $(`.seg-btn[data-val="${val}"]`, group);
+    if (btn) {
+      $$(".seg-btn", group).forEach(b => b.dataset.selected = (b === btn ? "true" : "false"));
+      formState[field] = val;
+    }
+  };
+
+  // 勤務帯
+  setSeg("shift", rec.shift);
+
+  // 労働環境
+  setSeg("break_secured", rec.workload && rec.workload.break_secured);
+  if (rec.workload && rec.workload.break_secured === "確保できなかった") {
+    $("#break_detail").dataset.show = "true";
+    $("#f_short_min").value = rec.workload.short_min || 0;
+    $("#f_short_people").value = rec.workload.short_people || 1;
+    setSeg("help_requested", rec.workload.help_requested);
+    if (rec.workload.help_requested === "なし") {
+      $("#help_no_reason").dataset.show = "true";
+      $("#f_no_help_reason").value = rec.workload.no_help_reason || "";
+    }
+  }
+
+  // チームの状態
+  const t = rec.team_state || {};
+  setSeg("team_collab", t.team_collab);
+  setSeg("external_collab", t.external_collab);
+  setSeg("psych_safety", t.psych_safety);
+  $$('[data-note]').forEach(el => {
+    const key = el.dataset.note;
+    if (t[key] !== undefined) el.value = t[key] || "";
+  });
+
+  // 患者・家族への関わり
+  const p = rec.patient_care || {};
+  setSeg("hospitality", p.hospitality);
+  setSeg("wait_care", p.wait_care);
+  setSeg("anxiety_relief", p.anxiety_relief);
+  $("#f_patient_comment").value = p.comment || "";
+
+  // 振り返りケース（新形式: c.items / 旧形式: c.type, c.case_id, c.content）
+  const c = rec.case || {};
+  setSeg("case_exists", c.exists);
+  if (c.exists === "あり") {
+    $("#case_detail").dataset.show = "true";
+    if (Array.isArray(c.items) && c.items.length > 0) {
+      // 新形式：複数件を順に追加
+      c.items.forEach(item => addCase(item));
+    } else if (c.type || c.case_id || c.content) {
+      // 旧形式：単一の症例を1件として復元
+      addCase({ type: c.type, case_id: c.case_id, content: c.content });
+    } else {
+      // 内容なしでも空の枠を1つ表示
+      addCase();
+    }
+  }
+
+  // 成功事例
+  if (Array.isArray(rec.success_cases)) {
+    rec.success_cases.forEach(sc => addSuccessCase(sc));
+  }
+
+  // 共有事項
+  $("#f_share").value = rec.share || "";
+
+  updateSaveButtonLabel();
+}
+
+function startEditRecord(id) {
+  const rec = loadAll().find(r => r.id === id);
+  if (!rec) {
+    toast("記録が見つかりません");
+    return;
+  }
+  loadRecordToForm(rec);
+  // 入力タブに切り替え
+  $$(".tab-btn").forEach(b => b.dataset.active = (b.dataset.tab === "input" ? "true" : "false"));
+  $("#tab-input").classList.remove("hidden");
+  $("#tab-history").classList.add("hidden");
+  $("#tab-stats").classList.add("hidden");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelEdit() {
+  resetForm();
+  toast("編集をキャンセルしました");
+}
+
+function deleteRecord(id) {
+  const all = loadAll();
+  const idx = all.findIndex(r => r.id === id);
+  if (idx < 0) return;
+  all.splice(idx, 1);
+  saveAll(all);
+  // 既読リストからも掃除
+  const read = loadReadIds();
+  read.delete(id);
+  saveReadIds(read);
+  // 編集中の対象が削除されたらフォームをリセット
+  if (editingId === id) resetForm();
+  refreshNotificationBadge();
+  refreshReporterList();
+  renderHistory();
+  renderStats();
+  toast("削除しました");
+}
 
 // ------------ History ------------
 function getActiveDays(filterSel) {
@@ -1570,14 +1928,30 @@ function applyFilters(records, f) {
       const label = (r.share && r.share.trim()) ? "あり" : "なし";
       if (!f.share.includes(label)) return false;
     }
+    if (has(f.success_exists)) {
+      const successList = Array.isArray(r.success_cases) ? r.success_cases : [];
+      const label = successList.length > 0 ? "あり" : "なし";
+      if (!f.success_exists.includes(label)) return false;
+    }
     if (f.q) {
       const q = f.q.toLowerCase();
+      const successText = (Array.isArray(r.success_cases) ? r.success_cases : [])
+        .map(sc => sc.content || "")
+        .join(" ");
+      // 振り返り症例：新形式(items) + 旧形式(type/case_id/content)
+      const caseItems = (Array.isArray(r.case.items) && r.case.items.length > 0)
+        ? r.case.items
+        : [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }];
+      const caseText = caseItems
+        .map(it => [it.type, it.case_id, it.content].filter(Boolean).join(" "))
+        .join(" ");
       const text = [
         r.reporter, r.share,
         r.team_state.team_collab_note, r.team_state.external_collab_note, r.team_state.psych_safety_note,
         r.patient_care.comment,
-        r.case.type, r.case.case_id, r.case.content,
+        caseText,
         r.workload.no_help_reason,
+        successText,
       ].filter(Boolean).join(" ").toLowerCase();
       if (!text.includes(q)) return false;
     }
@@ -1592,6 +1966,7 @@ function readHistFilters() {
     team_state: getSelectedChipValues("hist", "team_state"),
     patient_care: getSelectedChipValues("hist", "patient_care"),
     case_exists: getSelectedChipValues("hist", "case_exists"),
+    success_exists: getSelectedChipValues("hist", "success_exists"),
     share: getSelectedChipValues("hist", "share"),
     q: $("#histFreeSearch").value.trim(),
   };
@@ -1603,6 +1978,7 @@ function readStatsFilters() {
     team_state: getSelectedChipValues("stats", "team_state"),
     patient_care: getSelectedChipValues("stats", "patient_care"),
     case_exists: getSelectedChipValues("stats", "case_exists"),
+    success_exists: getSelectedChipValues("stats", "success_exists"),
     share: getSelectedChipValues("stats", "share"),
     q: $("#statsFreeSearch").value.trim(),
   };
@@ -1685,18 +2061,71 @@ function renderHistory() {
             ${r.workload.help_requested ? ` ／ 応援要請: <span class="font-semibold text-[var(--navy-800)]">${r.workload.help_requested}</span>` : ""}
           </div>` : ""}
         ${pat.comment ? `<div class="mt-2 text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md"><span class="font-semibold">患者家族コメント</span><br>${escapeHtml(pat.comment)}</div>` : ""}
-        ${hasCase ? `
+        ${hasCase ? (() => {
+          // 新形式・旧形式の両対応
+          const items = (Array.isArray(r.case.items) && r.case.items.length > 0)
+            ? r.case.items
+            : ((r.case.type || r.case.case_id || r.case.content) ? [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }] : []);
+          if (!items.length) return "";
+          return `
           <div class="mt-3 pt-3 border-t border-[var(--line)]">
-            <div class="flex items-center gap-2 mb-2 flex-wrap">
-              <span class="text-[11px] font-semibold text-[var(--navy-700)]">📋 振り返り症例</span>
-              ${caseTypeBadge(r.case.type)}
-              ${r.case.case_id ? `<span class="text-[11px] text-[var(--muted)]">ID: <span class="font-semibold text-[var(--navy-800)]">${escapeHtml(r.case.case_id)}</span></span>` : ""}
+            <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">📋 振り返り症例（${items.length}件）</div>
+            <div class="space-y-2">
+              ${items.map((it, i) => `
+                <div class="rounded-lg p-3" style="background:var(--soft-info)">
+                  <div class="flex items-center gap-2 mb-1.5 flex-wrap">
+                    <span class="text-[11px] font-bold text-[var(--navy-700)] num-tabular">症例 ${i+1}</span>
+                    ${caseTypeBadge(it.type)}
+                    ${it.case_id ? `<span class="text-[11px] text-[var(--muted)]">ID: <span class="font-semibold text-[var(--navy-800)]">${escapeHtml(it.case_id)}</span></span>` : ""}
+                  </div>
+                  ${it.content ? `<div class="text-[12px] text-[var(--navy-800)] leading-relaxed whitespace-pre-wrap">${escapeHtml(it.content)}</div>` : `<div class="text-[11px] text-[var(--muted)] italic">（内容の記載なし）</div>`}
+                </div>
+              `).join("")}
             </div>
-            ${r.case.content ? `<div class="p-3 rounded-lg bg-[var(--soft-info)] text-[12px] text-[var(--navy-800)] leading-relaxed whitespace-pre-wrap">${escapeHtml(r.case.content)}</div>` : `<div class="text-[11px] text-[var(--muted)] italic">（内容の記載なし）</div>`}
+          </div>`;
+        })() : ""}
+        ${Array.isArray(r.success_cases) && r.success_cases.length ? `
+          <div class="mt-3 pt-3 border-t border-[var(--line)]">
+            <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">✨ 本日の成功事例（${r.success_cases.length}件）</div>
+            <div class="space-y-1.5">
+              ${r.success_cases.map(sc => `
+                <div class="p-2.5 rounded-lg" style="background:#ecfdf5;border-left:3px solid var(--good)">
+                  ${sc.content ? `<div class="text-[12px] text-[var(--navy-800)] leading-relaxed whitespace-pre-wrap">${escapeHtml(sc.content)}</div>` : ""}
+                </div>
+              `).join("")}
+            </div>
           </div>` : ""}
         ${r.share ? `<div class="mt-2 text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md"><span class="font-semibold">💬 共有事項</span><br>${escapeHtml(r.share)}</div>` : ""}
+        ${r.updated_at_ms ? `<div class="mt-2 text-[10px] text-[var(--muted)] italic">※ ${formatUpdatedAt(r.updated_at_ms)}に修正</div>` : ""}
+        <div class="mt-3 pt-3 border-t border-[var(--line)] flex gap-2">
+          <button type="button" class="flex-1 btn-secondary text-[12px] py-2 flex items-center justify-center gap-1.5" data-action="edit" data-id="${r.id}">
+            <svg viewBox="0 0 24 24" width="13" height="13" class="ico"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            編集
+          </button>
+          <button type="button" class="btn-secondary text-[12px] py-2 px-3 flex items-center justify-center gap-1.5" data-action="delete" data-id="${r.id}" style="color:var(--bad);border-color:#fecaca">
+            <svg viewBox="0 0 24 24" width="13" height="13" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            削除
+          </button>
+        </div>
       </div>`;
   }).join("");
+
+  // 編集・削除ボタンのイベント委譲
+  $("#histList").querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === "edit") startEditRecord(id);
+      else if (action === "delete") askDeleteRecord(id);
+    });
+  });
+}
+
+function formatUpdatedAt(ms) {
+  const d = new Date(ms);
+  const z = n => String(n).padStart(2,"0");
+  return `${d.getFullYear()}/${z(d.getMonth()+1)}/${z(d.getDate())} ${z(d.getHours())}:${z(d.getMinutes())}`;
 }
 
 function escapeHtml(s) {
@@ -1745,12 +2174,22 @@ function renderStats() {
     { key: "wait_care", label: "待ち時間への配慮", group: "patient_care" },
     { key: "anxiety_relief", label: "不安軽減", group: "patient_care" },
   ];
-  const addAvg = m => ({
+  // 分布カウントヘルパー
+  const distOf = (m) => {
+    const vals = records.map(r => r[m.group][m.key]);
+    return {
+      good: vals.filter(v => v === "良い").length,
+      mid:  vals.filter(v => v === "普通").length,
+      bad:  vals.filter(v => v === "悪い").length,
+    };
+  };
+  const addAvgAndDist = m => ({
     ...m,
-    avg: avg(records.map(r => rateToNum(r[m.group][m.key])))
+    avg: avg(records.map(r => rateToNum(r[m.group][m.key]))),
+    dist: distOf(m),
   });
-  const teamAvgs = teamMetrics.map(addAvg);
-  const patientAvgs = patientMetrics.map(addAvg);
+  const teamAvgs = teamMetrics.map(addAvgAndDist);
+  const patientAvgs = patientMetrics.map(addAvgAndDist);
 
   // 休憩関連の集計
   const breakSecuredCount = records.filter(r => r.workload.break_secured === "確保できた").length;
@@ -1763,30 +2202,91 @@ function renderStats() {
   const helpYesCount = records.filter(r => r.workload.break_secured === "確保できなかった" && r.workload.help_requested === "あり").length;
   const helpNoCount = records.filter(r => r.workload.break_secured === "確保できなかった" && r.workload.help_requested === "なし").length;
 
-  const metricBlock = (title, icon, arr) => `
-    <div class="card p-5 mb-4">
-      <div class="flex items-center gap-2 mb-3">
-        ${icon}
-        <div class="text-[12px] font-semibold text-[var(--navy-700)]">${title}</div>
-      </div>
-      <div class="space-y-3">
-        ${arr.map(m => {
-          const v = m.avg;
-          const pct = v ? (v/3)*100 : 0;
-          const color = v >= 2.5 ? "var(--good)" : v >= 1.5 ? "var(--mid)" : v ? "var(--bad)" : "var(--line-strong)";
-          return `
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-[12px] font-semibold text-[var(--navy-800)]">${m.label}</span>
-                <span class="text-[13px] font-bold num-tabular" style="color:${color}">${v !== null ? v.toFixed(2) : "—"}</span>
-              </div>
-              <div class="score-bar">
-                <div style="width:${pct}%; background:${color}"></div>
-              </div>
-            </div>`;
-        }).join("")}
-      </div>
-    </div>`;
+  const renderBar = (m) => {
+    const v = m.avg;
+    const pct = v ? (v/3)*100 : 0;
+    const color = v >= 2.5 ? "var(--good)" : v >= 1.5 ? "var(--mid)" : v ? "var(--bad)" : "var(--line-strong)";
+    const total = m.dist.good + m.dist.mid + m.dist.bad;
+    return `
+      <div class="mb-3">
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-[12px] font-semibold text-[var(--navy-800)]">${m.label}</span>
+          <span class="text-[13px] font-bold num-tabular" style="color:${color}">${v !== null ? v.toFixed(2) : "—"}<span class="text-[10px] text-[var(--muted)] ml-1">(n=${total})</span></span>
+        </div>
+        <div class="score-bar">
+          <div style="width:${pct}%; background:${color}"></div>
+        </div>
+      </div>`;
+  };
+
+  const renderPie = (m) => {
+    const total = m.dist.good + m.dist.mid + m.dist.bad;
+    if (total === 0) {
+      return `
+        <div class="text-center">
+          <div class="text-[12px] font-semibold text-[var(--navy-800)] mb-2">${m.label}</div>
+          <div class="text-[11px] text-[var(--muted)] py-6">データなし</div>
+        </div>`;
+    }
+    const cx = 50, cy = 50, r = 38;
+    let angle = -Math.PI / 2;
+    const segs = [
+      { value: m.dist.good, color: "var(--good)", label: "良い" },
+      { value: m.dist.mid,  color: "var(--mid)",  label: "普通" },
+      { value: m.dist.bad,  color: "var(--bad)",  label: "悪い" },
+    ].filter(s => s.value > 0);
+
+    let paths = "";
+    if (segs.length === 1) {
+      // 1色のみ：円全体を塗る
+      paths = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${segs[0].color}"/>`;
+    } else {
+      segs.forEach(seg => {
+        const ratio = seg.value / total;
+        const endAngle = angle + ratio * Math.PI * 2;
+        const x1 = cx + r * Math.cos(angle);
+        const y1 = cy + r * Math.sin(angle);
+        const x2 = cx + r * Math.cos(endAngle);
+        const y2 = cy + r * Math.sin(endAngle);
+        const large = ratio > 0.5 ? 1 : 0;
+        paths += `<path d="M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${large} 1 ${x2},${y2} Z" fill="${seg.color}"/>`;
+        angle = endAngle;
+      });
+    }
+    // 中央に合計件数
+    const innerR = 22;
+    const centerCircle = `<circle cx="${cx}" cy="${cy}" r="${innerR}" fill="#fff"/>`;
+    const centerText = `<text x="${cx}" y="${cy-1}" text-anchor="middle" font-size="11" font-weight="700" fill="var(--navy-800)" font-family="'Zen Kaku Gothic New',sans-serif">${total}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" font-size="7" fill="var(--muted)">件</text>`;
+
+    return `
+      <div class="text-center">
+        <div class="text-[12px] font-semibold text-[var(--navy-800)] mb-2">${m.label}</div>
+        <svg viewBox="0 0 100 100" width="100%" style="max-width:140px;display:block;margin:0 auto">
+          ${paths}
+          ${centerCircle}
+          ${centerText}
+        </svg>
+        <div class="flex items-center justify-center gap-2 mt-2 flex-wrap text-[10px]">
+          <span class="flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:var(--good)"></span>${m.dist.good}</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:var(--mid)"></span>${m.dist.mid}</span>
+          <span class="flex items-center gap-1"><span class="inline-block w-2 h-2 rounded-full" style="background:var(--bad)"></span>${m.dist.bad}</span>
+        </div>
+      </div>`;
+  };
+
+  const metricBlock = (title, icon, arr) => {
+    const body = statsChartMode === "pie"
+      ? `<div class="grid grid-cols-3 gap-2">${arr.map(renderPie).join("")}</div>`
+      : `<div>${arr.map(renderBar).join("")}</div>`;
+    return `
+      <div class="card p-5 mb-4">
+        <div class="flex items-center gap-2 mb-3">
+          ${icon}
+          <div class="text-[12px] font-semibold text-[var(--navy-700)]">${title}</div>
+        </div>
+        ${body}
+      </div>`;
+  };
 
   const statsIcon = `<svg viewBox="0 0 24 24" width="14" height="14" class="ico text-[var(--navy-700)]"><path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 6-6"/></svg>`;
 
@@ -1936,6 +2436,21 @@ function renderStats() {
       </div>`;
   }
 
+  // グラフ切替ボタン
+  html += `
+    <div class="flex items-center justify-end mb-3">
+      <div class="inline-flex rounded-lg overflow-hidden border border-[var(--line-strong)]" style="background:#fff">
+        <button type="button" class="text-[11px] font-semibold py-1.5 px-3 flex items-center gap-1" data-chart-mode="bar" style="${statsChartMode === 'bar' ? 'background:var(--navy-800);color:#fff' : 'color:var(--navy-700)'}">
+          <svg viewBox="0 0 24 24" width="12" height="12" class="ico"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>
+          棒
+        </button>
+        <button type="button" class="text-[11px] font-semibold py-1.5 px-3 flex items-center gap-1" data-chart-mode="pie" style="${statsChartMode === 'pie' ? 'background:var(--navy-800);color:#fff' : 'color:var(--navy-700)'}">
+          <svg viewBox="0 0 24 24" width="12" height="12" class="ico"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+          円
+        </button>
+      </div>
+    </div>`;
+
   // チームの状態
   html += metricBlock("チームの状態", statsIcon, teamAvgs);
 
@@ -1943,6 +2458,17 @@ function renderStats() {
   html += metricBlock("患者家族への関わり", statsIcon, patientAvgs);
 
   el.innerHTML = filterNote + html;
+
+  // グラフ切替ボタンのリスナ
+  el.querySelectorAll('[data-chart-mode]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const mode = btn.dataset.chartMode;
+      if (mode !== statsChartMode) {
+        statsChartMode = mode;
+        renderStats();
+      }
+    });
+  });
 }
 
 // ------------ Export / PIN ------------
@@ -1984,24 +2510,42 @@ function doExport() {
     return;
   }
   const headers = [
-    "id","日付","保存時刻","勤務帯","記録者","看護師数","医師数",
+    "No.","日付","保存時刻","勤務帯","記録者","看護師数","医師数",
     "休憩確保","不足時間(分)","対象人数","応援要請","応援なし理由",
     "チーム連携","チーム連携_場面","他機関連携","他機関連携_場面","心理的安全性","心理的安全性_場面",
     "接遇","待ち時間配慮","不安軽減","患者家族コメント",
-    "ケース有無","搬送区分","ケースID","ケース内容","共有事項"
+    "ケース有無","ケース件数","搬送区分（｜区切り）","ケースID（｜区切り）","ケース内容（｜｜区切り）",
+    "成功事例数","成功事例（｜｜区切り）",
+    "共有事項","修正日時"
   ];
-  const rows = records.map(r => [
-    r.id, r.date, r.saved_time, r.shift || "", r.reporter || "",
-    r.team.nurses, r.team.doctors,
-    r.workload.break_secured || "", r.workload.short_min || 0, r.workload.short_people || 0,
-    r.workload.help_requested || "", r.workload.no_help_reason || "",
-    r.team_state.team_collab || "", r.team_state.team_collab_note || "",
-    r.team_state.external_collab || "", r.team_state.external_collab_note || "",
-    r.team_state.psych_safety || "", r.team_state.psych_safety_note || "",
-    r.patient_care.hospitality || "", r.patient_care.wait_care || "", r.patient_care.anxiety_relief || "", r.patient_care.comment || "",
-    r.case.exists || "", r.case.type || "", r.case.case_id || "", r.case.content || "",
-    r.share || ""
-  ]);
+  // 保存順（古い→新しい）で並べ替えてから出力。ID列は1始まりの連番
+  const sortedRecords = [...records].sort((a, b) => (a.saved_at_ms || 0) - (b.saved_at_ms || 0));
+  const rows = sortedRecords.map((r, idx) => {
+    // 成功事例
+    const successList = Array.isArray(r.success_cases) ? r.success_cases : [];
+    const successText = successList.map(sc => (sc.content || "").replace(/\n/g, " ")).join("｜｜");
+    // 振り返りケース：新形式(items) と 旧形式(type/case_id/content) の両方に対応
+    const caseItems = (Array.isArray(r.case.items) && r.case.items.length > 0)
+      ? r.case.items
+      : ((r.case.type || r.case.case_id || r.case.content) ? [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }] : []);
+    const caseTypes = caseItems.map(it => it.type || "").join("｜");
+    const caseIds = caseItems.map(it => it.case_id || "").join("｜");
+    const caseContents = caseItems.map(it => (it.content || "").replace(/\n/g, " ")).join("｜｜");
+    return [
+      idx + 1, r.date, r.saved_time, r.shift || "", r.reporter || "",
+      r.team.nurses, r.team.doctors,
+      r.workload.break_secured || "", r.workload.short_min || 0, r.workload.short_people || 0,
+      r.workload.help_requested || "", r.workload.no_help_reason || "",
+      r.team_state.team_collab || "", r.team_state.team_collab_note || "",
+      r.team_state.external_collab || "", r.team_state.external_collab_note || "",
+      r.team_state.psych_safety || "", r.team_state.psych_safety_note || "",
+      r.patient_care.hospitality || "", r.patient_care.wait_care || "", r.patient_care.anxiety_relief || "", r.patient_care.comment || "",
+      r.case.exists || "", caseItems.length, caseTypes, caseIds, caseContents,
+      successList.length, successText,
+      r.share || "",
+      r.updated_at_ms ? formatUpdatedAt(r.updated_at_ms) : ""
+    ];
+  });
   const csv = [headers, ...rows].map(row =>
     row.map(cell => {
       const s = String(cell ?? "");
