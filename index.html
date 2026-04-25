@@ -333,6 +333,58 @@
   .filter-row { margin-bottom: 14px; }
   .filter-row:last-of-type { margin-bottom: 0; }
 
+  /* Collapsible filter panel */
+  .filter-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 2px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--navy-700);
+  }
+  .filter-toggle-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-toggle-chevron {
+    transition: transform .2s ease;
+    color: var(--muted);
+  }
+  .filter-panel[data-open="false"] .filter-toggle-chevron {
+    transform: rotate(-90deg);
+  }
+  .filter-body {
+    overflow: hidden;
+    transition: max-height .25s ease, opacity .2s ease, margin-top .2s ease;
+    max-height: 2000px;
+    opacity: 1;
+    margin-top: 14px;
+  }
+  .filter-panel[data-open="false"] .filter-body {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+  }
+  .filter-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--navy-800);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
   /* Subtle hero grid */
   .hero {
     background:
@@ -672,11 +724,16 @@
 
   <!-- =========== TAB: HISTORY =========== -->
   <section id="tab-history" class="hidden space-y-4">
-    <div class="card p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
-        <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
-      </div>
+    <div class="card p-4 filter-panel" id="histFilterPanel" data-open="false">
+      <button type="button" class="filter-toggle" data-filter-toggle="hist">
+        <span class="filter-toggle-left">
+          <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
+          <span class="filter-count-badge hidden" id="histFilterCount">0</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" class="ico filter-toggle-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="filter-body">
 
       <div class="filter-row">
         <label class="lbl">期間</label>
@@ -742,6 +799,7 @@
       <input type="text" id="histFreeSearch" class="fld" placeholder="キーワード（記録者・メモ・症例内容など）" />
 
       <button type="button" id="histClearBtn" class="btn-secondary w-full mt-3 text-[12px]">絞り込みをリセット</button>
+      </div>
     </div>
 
     <div id="histList" class="space-y-3"></div>
@@ -749,11 +807,16 @@
 
   <!-- =========== TAB: STATS =========== -->
   <section id="tab-stats" class="hidden space-y-4">
-    <div class="card p-4">
-      <div class="flex items-center gap-2 mb-3">
-        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
-        <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
-      </div>
+    <div class="card p-4 filter-panel" id="statsFilterPanel" data-open="false">
+      <button type="button" class="filter-toggle" data-filter-toggle="stats">
+        <span class="filter-toggle-left">
+          <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+          <span class="text-[13px] font-semibold text-[var(--navy-700)]">絞り込み</span>
+          <span class="filter-count-badge hidden" id="statsFilterCount">0</span>
+        </span>
+        <svg viewBox="0 0 24 24" width="18" height="18" class="ico filter-toggle-chevron"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="filter-body">
 
       <div class="filter-row">
         <label class="lbl">期間</label>
@@ -816,9 +879,10 @@
       </div>
 
       <label class="lbl">フリー検索</label>
-      <input type="text" id="statsFreeSearch" class="fld mb-3" placeholder="キーワード（記録者・メモ・症例内容など）" />
+      <input type="text" id="statsFreeSearch" class="fld" placeholder="キーワード（記録者・メモ・症例内容など）" />
 
       <button type="button" id="statsClearBtn" class="btn-secondary w-full mt-3 text-[12px]">絞り込みをリセット</button>
+      </div>
     </div>
 
     <div id="statsContent"></div>
@@ -1052,6 +1116,15 @@ function setupTabs() {
 
 // ------------ Filters ------------
 function setupFilters() {
+  // 折りたたみトグル
+  $$('[data-filter-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const kind = btn.dataset.filterToggle;
+      const panel = $(`#${kind}FilterPanel`);
+      panel.dataset.open = panel.dataset.open === "true" ? "false" : "true";
+    });
+  });
+
   // チップ押下の共通ハンドラ（単一選択 or 複数選択をdata-modeで分岐）
   $$(".chip-group").forEach(group => {
     group.addEventListener("click", (e) => {
@@ -1064,26 +1137,53 @@ function setupFilters() {
         btn.dataset.active = btn.dataset.active === "true" ? "false" : "true";
       }
       const kind = group.dataset.filterKind;
-      if (kind === "hist") renderHistory();
-      if (kind === "stats") renderStats();
+      if (kind === "hist") { updateFilterCountBadge("hist"); renderHistory(); }
+      if (kind === "stats") { updateFilterCountBadge("stats"); renderStats(); }
     });
   });
 
   // フリー検索（履歴・統計）
-  $("#histFreeSearch").addEventListener("input", debounce(renderHistory, 180));
-  $("#statsFreeSearch").addEventListener("input", debounce(renderStats, 180));
+  $("#histFreeSearch").addEventListener("input", debounce(() => { updateFilterCountBadge("hist"); renderHistory(); }, 180));
+  $("#statsFreeSearch").addEventListener("input", debounce(() => { updateFilterCountBadge("stats"); renderStats(); }, 180));
 
   // リセットボタン
   $("#histClearBtn").addEventListener("click", () => {
     clearChipGroups("hist");
     $("#histFreeSearch").value = "";
+    updateFilterCountBadge("hist");
     renderHistory();
   });
   $("#statsClearBtn").addEventListener("click", () => {
     clearChipGroups("stats");
     $("#statsFreeSearch").value = "";
+    updateFilterCountBadge("stats");
     renderStats();
   });
+
+  // 初期バッジ
+  updateFilterCountBadge("hist");
+  updateFilterCountBadge("stats");
+}
+
+// 絞り込み件数バッジ更新（期間チップは含めず、絞り込み項目とフリー検索のみカウント）
+function updateFilterCountBadge(kind) {
+  const badge = $(`#${kind}FilterCount`);
+  if (!badge) return;
+  let count = 0;
+  $$(`.chip-group[data-filter-kind="${kind}"]`).forEach(group => {
+    const key = group.dataset.filterKey;
+    if (key === "days") return; // 期間は常に必ず1つ選ばれている前提でカウントしない
+    const selected = $$('.chip[data-active="true"]', group);
+    if (selected.length > 0) count++;
+  });
+  const search = kind === "hist" ? $("#histFreeSearch").value.trim() : $("#statsFreeSearch").value.trim();
+  if (search) count++;
+  if (count > 0) {
+    badge.textContent = count;
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
 }
 
 function clearChipGroups(kind) {
