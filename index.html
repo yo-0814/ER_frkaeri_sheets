@@ -152,9 +152,6 @@
     background: var(--soft-warn);
     animation: slideIn .2s ease;
   }
-  .cond-info {
-    background: var(--soft-info);
-  }
   .cond-alert {
     background: var(--soft-alert);
     border-color: #fecaca;
@@ -198,7 +195,6 @@
     margin-left: 4px;
     font-weight: 700;
   }
-  .sec-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
 
   /* Tabs */
   .tab-btn {
@@ -428,14 +424,7 @@
   }
   .toast[data-show="true"] { opacity: 1; transform: translateX(-50%) translateY(-4px); }
 
-  /* Small helpers */
-  .hr-soft { height: 1px; background: var(--line); margin: 18px 0; }
-  .kbd {
-    display: inline-block; padding: 1px 6px;
-    background: var(--soft-info); color: var(--navy-700);
-    border-radius: 4px; font-size: 11px; font-weight: 600;
-  }
-
+  
   /* Scroll tabs */
   .tabs-wrap {
     position: sticky; top: 0; z-index: 40;
@@ -1225,7 +1214,7 @@ function addSuccessCase(initial) {
         <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
       </button>
     </div>
-    <textarea class="fld" data-success-content placeholder="例：12誘導心電図のST上昇にいち早く気づけた、経過3人持ちを問題なく対応できた など">${escapeHtml(content)}</textarea>
+    <textarea class="fld" data-success-content placeholder="例：心電図変化に気づけた、経過3人持ちを問題なく対応できた など">${escapeHtml(content)}</textarea>
   `;
   wrap.querySelector("[data-success-remove]").addEventListener("click", () => {
     wrap.remove();
@@ -1830,17 +1819,14 @@ function loadRecordToForm(rec) {
   setSeg("anxiety_relief", p.anxiety_relief);
   $("#f_patient_comment").value = p.comment || "";
 
-  // 振り返りケース（新形式: c.items / 旧形式: c.type, c.case_id, c.content）
+  // 振り返りケース
   const c = rec.case || {};
   setSeg("case_exists", c.exists);
   if (c.exists === "あり") {
     $("#case_detail").dataset.show = "true";
-    if (Array.isArray(c.items) && c.items.length > 0) {
-      // 新形式：複数件を順に追加
-      c.items.forEach(item => addCase(item));
-    } else if (c.type || c.case_id || c.content) {
-      // 旧形式：単一の症例を1件として復元
-      addCase({ type: c.type, case_id: c.case_id, content: c.content });
+    const items = getCaseItems(rec);
+    if (items.length > 0) {
+      items.forEach(item => addCase(item));
     } else {
       // 内容なしでも空の枠を1つ表示
       addCase();
@@ -1938,10 +1924,8 @@ function applyFilters(records, f) {
       const successText = (Array.isArray(r.success_cases) ? r.success_cases : [])
         .map(sc => sc.content || "")
         .join(" ");
-      // 振り返り症例：新形式(items) + 旧形式(type/case_id/content)
-      const caseItems = (Array.isArray(r.case.items) && r.case.items.length > 0)
-        ? r.case.items
-        : [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }];
+      // 振り返り症例：新形式・旧形式を統一して扱う
+      const caseItems = getCaseItems(r);
       const caseText = caseItems
         .map(it => [it.type, it.case_id, it.content].filter(Boolean).join(" "))
         .join(" ");
@@ -1959,30 +1943,22 @@ function applyFilters(records, f) {
   });
 }
 
-function readHistFilters() {
+// kind="hist"/"stats" 共通のフィルタ読み取り
+function readFilters(kind) {
+  const searchEl = kind === "hist" ? $("#histFreeSearch") : $("#statsFreeSearch");
   return {
-    shift: getSelectedChipValues("hist", "shift"),
-    break_secured: getSelectedChipValues("hist", "break_secured"),
-    team_state: getSelectedChipValues("hist", "team_state"),
-    patient_care: getSelectedChipValues("hist", "patient_care"),
-    case_exists: getSelectedChipValues("hist", "case_exists"),
-    success_exists: getSelectedChipValues("hist", "success_exists"),
-    share: getSelectedChipValues("hist", "share"),
-    q: $("#histFreeSearch").value.trim(),
+    shift: getSelectedChipValues(kind, "shift"),
+    break_secured: getSelectedChipValues(kind, "break_secured"),
+    team_state: getSelectedChipValues(kind, "team_state"),
+    patient_care: getSelectedChipValues(kind, "patient_care"),
+    case_exists: getSelectedChipValues(kind, "case_exists"),
+    success_exists: getSelectedChipValues(kind, "success_exists"),
+    share: getSelectedChipValues(kind, "share"),
+    q: searchEl ? searchEl.value.trim() : "",
   };
 }
-function readStatsFilters() {
-  return {
-    shift: getSelectedChipValues("stats", "shift"),
-    break_secured: getSelectedChipValues("stats", "break_secured"),
-    team_state: getSelectedChipValues("stats", "team_state"),
-    patient_care: getSelectedChipValues("stats", "patient_care"),
-    case_exists: getSelectedChipValues("stats", "case_exists"),
-    success_exists: getSelectedChipValues("stats", "success_exists"),
-    share: getSelectedChipValues("stats", "share"),
-    q: $("#statsFreeSearch").value.trim(),
-  };
-}
+function readHistFilters() { return readFilters("hist"); }
+function readStatsFilters() { return readFilters("stats"); }
 
 function ratingColor(r) {
   return r === "良い" ? "var(--good)" : r === "普通" ? "var(--mid)" : r === "悪い" ? "var(--bad)" : "var(--line-strong)";
@@ -2062,10 +2038,7 @@ function renderHistory() {
           </div>` : ""}
         ${pat.comment ? `<div class="mt-2 text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md"><span class="font-semibold">患者家族コメント</span><br>${escapeHtml(pat.comment)}</div>` : ""}
         ${hasCase ? (() => {
-          // 新形式・旧形式の両対応
-          const items = (Array.isArray(r.case.items) && r.case.items.length > 0)
-            ? r.case.items
-            : ((r.case.type || r.case.case_id || r.case.content) ? [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }] : []);
+          const items = getCaseItems(r);
           if (!items.length) return "";
           return `
           <div class="mt-3 pt-3 border-t border-[var(--line)]">
@@ -2132,6 +2105,17 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
   }[c]));
+}
+
+// 振り返りケースの新旧形式を統一して取り出す
+// 新形式: case.items[] / 旧形式: case.{type, case_id, content}
+function getCaseItems(rec) {
+  const c = (rec && rec.case) || {};
+  if (Array.isArray(c.items) && c.items.length > 0) return c.items;
+  if (c.type || c.case_id || c.content) {
+    return [{ type: c.type, case_id: c.case_id, content: c.content }];
+  }
+  return [];
 }
 
 // ------------ Stats ------------
@@ -2524,10 +2508,8 @@ function doExport() {
     // 成功事例
     const successList = Array.isArray(r.success_cases) ? r.success_cases : [];
     const successText = successList.map(sc => (sc.content || "").replace(/\n/g, " ")).join("｜｜");
-    // 振り返りケース：新形式(items) と 旧形式(type/case_id/content) の両方に対応
-    const caseItems = (Array.isArray(r.case.items) && r.case.items.length > 0)
-      ? r.case.items
-      : ((r.case.type || r.case.case_id || r.case.content) ? [{ type: r.case.type, case_id: r.case.case_id, content: r.case.content }] : []);
+    // 振り返りケース：新形式・旧形式を統一して扱う
+    const caseItems = getCaseItems(r);
     const caseTypes = caseItems.map(it => it.type || "").join("｜");
     const caseIds = caseItems.map(it => it.case_id || "").join("｜");
     const caseContents = caseItems.map(it => (it.content || "").replace(/\n/g, " ")).join("｜｜");
