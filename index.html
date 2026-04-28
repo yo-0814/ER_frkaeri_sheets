@@ -538,6 +538,21 @@
   .stepper button:active { background: var(--soft-info); }
   .stepper input { flex: 1; min-width: 0; width: 100%; text-align: center; font-size: 17px; font-weight: 700; border: none; outline: none; color: var(--navy-900); background: #fff; padding: 0 4px; box-sizing: border-box; -webkit-appearance: none; appearance: none; -moz-appearance: textfield; }
   .stepper input::-webkit-outer-spin-button, .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  /* Lock toggle button (フローティング) */
+  #lockToggleBtn:active { transform: scale(0.92); }
+  #lockToggleBtn { transition: transform .1s; }
+
+  /* Role selection button hover */
+  #roleSelectInput:active, #roleSelectAdmin:active { transform: scale(0.98); }
+  #roleSelectInput, #roleSelectAdmin { transition: transform .1s, border-color .15s, background .15s; }
+  #roleSelectInput:hover, #roleSelectAdmin:hover { border-color: var(--blue-500); background: var(--soft-info); }
+
+  /* Sync icon spin */
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
 </style>
 </head>
 <body class="pb-24">
@@ -825,6 +840,26 @@
 
   <!-- =========== TAB: HISTORY =========== -->
   <section id="tab-history" class="hidden space-y-4">
+    <!-- 同期パネル -->
+    <div class="card p-3 flex items-center justify-between gap-2" id="syncPanel">
+      <div class="flex items-center gap-2 min-w-0 flex-1">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--soft-info);color:var(--navy-700)">
+          <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M21 12a9 9 0 0 1-9 9c-2.4 0-4.6-.9-6.3-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9c2.4 0 4.6.9 6.3 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-[12px] font-semibold text-[var(--navy-800)] flex items-center gap-1.5">
+            クラウド同期
+            <span id="syncQueueBadge" class="hidden filter-count-badge" style="background:var(--mid)">0</span>
+          </div>
+          <div class="text-[10px] text-[var(--muted)]" id="lastSyncLabel">未同期</div>
+        </div>
+      </div>
+      <button type="button" id="manualSyncBtn" class="btn-secondary text-[12px] py-2 px-3 flex items-center gap-1.5 flex-shrink-0">
+        <svg viewBox="0 0 24 24" width="13" height="13" class="ico" id="syncBtnIcon"><path d="M21 12a9 9 0 0 1-9 9c-2.4 0-4.6-.9-6.3-2.5L3 16"/><path d="M3 12a9 9 0 0 1 9-9c2.4 0 4.6.9 6.3 2.5L21 8"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>
+        同期
+      </button>
+    </div>
+
     <div class="card p-4 filter-panel" id="histFilterPanel" data-open="false">
       <button type="button" class="filter-toggle" data-filter-toggle="hist">
         <span class="filter-toggle-left">
@@ -1033,6 +1068,76 @@
 
 </main>
 
+<!-- ============ MODAL: ROLE SELECTION (初回起動時) ============ -->
+<div class="modal-backdrop" id="roleModal">
+  <div class="modal" style="max-width:380px">
+    <div class="p-5">
+      <div class="text-center mb-4">
+        <div class="hero-mark mx-auto mb-3" style="width:48px;height:48px">
+          <svg viewBox="0 0 24 24" width="24" height="24" class="ico"><path d="M8 2v4"/><path d="M16 2v4"/><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 10h18"/><path d="M12 14v4"/><path d="M10 16h4"/></svg>
+        </div>
+        <div class="font-display font-bold text-[18px] mb-1">利用モードを選択</div>
+        <p class="text-[12px] text-[var(--muted)] leading-relaxed">この端末での利用方法を選択してください。<br>後で右下の鍵アイコンから変更できます。</p>
+      </div>
+      <div class="space-y-2.5 mt-4">
+        <button type="button" id="roleSelectInput" class="w-full p-4 rounded-xl border-2 text-left transition-all" style="border-color:var(--line-strong);background:#fff">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--soft-info);color:var(--navy-700)">
+              <svg viewBox="0 0 24 24" width="18" height="18" class="ico"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-[14px] text-[var(--navy-900)] mb-0.5">入力専用モード</div>
+              <div class="text-[11px] text-[var(--muted)] leading-relaxed">振り返りの入力のみ可能。履歴・統計は表示されません。</div>
+            </div>
+          </div>
+        </button>
+        <button type="button" id="roleSelectAdmin" class="w-full p-4 rounded-xl border-2 text-left transition-all" style="border-color:var(--line-strong);background:#fff">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style="background:var(--navy-800);color:#fff">
+              <svg viewBox="0 0 24 24" width="18" height="18" class="ico"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="font-bold text-[14px] text-[var(--navy-900)] mb-0.5">管理者モード</div>
+              <div class="text-[11px] text-[var(--muted)] leading-relaxed">入力に加えて履歴・統計・CSV出力が可能。暗証番号が必要です。</div>
+            </div>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: ADMIN PIN (管理者モード切替用) ============ -->
+<div class="modal-backdrop" id="adminPinModal">
+  <div class="modal">
+    <div class="p-5">
+      <div class="flex items-center gap-2 mb-4">
+        <svg viewBox="0 0 24 24" width="18" height="18" class="ico text-[var(--navy-700)]"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        <div class="font-display font-bold text-[16px]">管理者モード</div>
+      </div>
+      <p class="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">暗証番号を入力してください。</p>
+      <div class="flex gap-2 justify-center mb-3" id="adminPinDots">
+        <div class="pin-dot" data-i="0"></div>
+        <div class="pin-dot" data-i="1"></div>
+        <div class="pin-dot" data-i="2"></div>
+        <div class="pin-dot" data-i="3"></div>
+      </div>
+      <input type="tel" inputmode="numeric" maxlength="4" id="adminPinInput" class="fld text-center num-tabular tracking-[0.5em]" placeholder="----" autocomplete="off" />
+      <div id="adminPinError" class="text-[12px] text-red-600 mt-2 text-center font-semibold hidden">暗証番号が違います</div>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" onclick="closeModal('adminPinModal')">キャンセル</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="adminPinConfirmBtn">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 右下のロックトグルボタン（フローティング） -->
+<button type="button" id="lockToggleBtn" class="hidden" aria-label="モード切替"
+  style="position:fixed;bottom:20px;right:20px;width:48px;height:48px;border-radius:50%;background:var(--navy-800);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px -6px rgba(11,30,63,0.5);z-index:30;border:none;cursor:pointer">
+  <svg viewBox="0 0 24 24" width="20" height="20" class="ico" id="lockToggleIcon"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+</button>
+
 <!-- ============ MODAL: CONFIRM SAVE ============ -->
 <div class="modal-backdrop" id="confirmModal">
   <div class="modal">
@@ -1149,7 +1254,17 @@
 
 const STORAGE_KEY = "er_reflection_v1";
 const READ_KEY = "er_reflection_read_v1";
+const ROLE_KEY = "er_reflection_role_v1";  // "admin" | "input"
+const SYNC_QUEUE_KEY = "er_reflection_sync_queue_v1"; // 未送信キュー
+const LAST_SYNC_KEY = "er_reflection_last_sync_v1";   // 最終同期時刻
 const PIN_CODE = "0000";
+const ADMIN_PIN = "0000"; // 管理者モード切替用（CSVエクスポートと共通）
+
+// ====== GAS バックエンド設定 ======
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx1TPRBG31Ug5BZzS4nVOrEK540pdctk0CfxoLAgt0lTTWdd24VkmBoPz379OyVnxvS/exec";
+const GAS_SECRET = "8h2k9m4p7q3r6s1t8u5v9w2x6y4z7a3b";
+const GAS_ADMIN_TOKEN = "4d6f9g2h5j8k1m4n7p3q6r9s2t5u8v1w";
+// ================================
 
 // ------------ State ------------
 let formState = {
@@ -1240,11 +1355,14 @@ function init() {
   setupNotification();
   setupGoodJobs();
   setupCases();
+  setupRoleManagement();  // ← 追加
   refreshReporterList();
   refreshNotificationBadge();
 
   renderHistory();
   renderStats();
+
+  applyRole();  // ← 追加：UIに現在のロールを反映
 }
 
 function setupGoodJobs() {
@@ -1397,6 +1515,379 @@ function readCases() {
     chief_complaint: el.querySelector("[data-case-chief]").value.trim(),
     content: el.querySelector("[data-case-content]").value.trim(),
   })).filter(c => c.type || c.age || c.gender || c.chief_complaint || c.content);
+}
+
+// ------------ GAS Sync (フェーズ3) ------------
+// オンライン状態の確認
+const isOnline = () => navigator.onLine !== false;
+
+// 未送信キューの操作
+const loadSyncQueue = () => {
+  try { return JSON.parse(localStorage.getItem(SYNC_QUEUE_KEY) || "[]"); }
+  catch { return []; }
+};
+const saveSyncQueue = (q) => localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify(q));
+
+// キューに追加（重複排除：同じIDの保存リクエストは最新だけ残す）
+function enqueueSync(action, payload) {
+  const q = loadSyncQueue();
+  if (action === "save" && payload && payload.id) {
+    // 同IDの古い保存リクエストを削除
+    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === payload.id));
+    filtered.push({ action, payload, queued_at: Date.now() });
+    saveSyncQueue(filtered);
+  } else if (action === "delete" && payload && payload.id) {
+    // 同IDの保存リクエストもキューから削除（送信前に削除されたら無駄なので）
+    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === payload.id));
+    filtered.push({ action, payload, queued_at: Date.now() });
+    saveSyncQueue(filtered);
+  } else {
+    q.push({ action, payload, queued_at: Date.now() });
+    saveSyncQueue(q);
+  }
+}
+
+// 単一リクエストを GAS に送信
+async function postToGas(body) {
+  if (!GAS_URL || GAS_URL.startsWith("PLACEHOLDER")) {
+    throw new Error("GAS_URL not configured");
+  }
+  // text/plain にすると GAS 側でプリフライトを回避できる
+  const res = await fetch(GAS_URL, {
+    method: "POST",
+    body: JSON.stringify(body),
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    redirect: "follow",
+  });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error("invalid_response: " + text.slice(0, 100)); }
+  if (!data.ok) throw new Error(data.error || "unknown_error");
+  return data;
+}
+
+// レコード保存：成功すれば即送信、失敗ならキューイング
+async function syncSaveRecord(record) {
+  if (!isOnline()) {
+    enqueueSync("save", record);
+    return { queued: true };
+  }
+  try {
+    await postToGas({
+      secret: GAS_SECRET,
+      action: "save",
+      record: record,
+    });
+    return { synced: true };
+  } catch (err) {
+    console.warn("GAS save failed, queuing:", err);
+    enqueueSync("save", record);
+    return { queued: true, error: String(err) };
+  }
+}
+
+// レコード削除：管理者モード時のみ送信
+async function syncDeleteRecord(id) {
+  if (getRole() !== "admin") return { skipped: true };
+  if (!isOnline()) {
+    enqueueSync("delete", { id });
+    return { queued: true };
+  }
+  try {
+    await postToGas({
+      secret: GAS_SECRET,
+      action: "delete",
+      adminToken: GAS_ADMIN_TOKEN,
+      id: id,
+    });
+    return { synced: true };
+  } catch (err) {
+    console.warn("GAS delete failed, queuing:", err);
+    enqueueSync("delete", { id });
+    return { queued: true, error: String(err) };
+  }
+}
+
+// キューを順次フラッシュ（オンライン復帰時など）
+async function flushSyncQueue() {
+  if (!isOnline()) return { flushed: 0, failed: 0 };
+  const q = loadSyncQueue();
+  if (!q.length) return { flushed: 0, failed: 0 };
+
+  let flushed = 0, failed = 0;
+  const remaining = [];
+
+  for (const item of q) {
+    try {
+      const body = { secret: GAS_SECRET, action: item.action };
+      if (item.action === "save") {
+        body.record = item.payload;
+      } else if (item.action === "delete") {
+        body.adminToken = GAS_ADMIN_TOKEN;
+        body.id = item.payload.id;
+      }
+      await postToGas(body);
+      flushed++;
+    } catch (err) {
+      console.warn("flush item failed:", err, item);
+      failed++;
+      remaining.push(item); // 失敗したものは残す
+    }
+  }
+
+  saveSyncQueue(remaining);
+  return { flushed, failed };
+}
+
+// 管理者モード時：GAS から全レコードを取得して localStorage にマージ
+async function pullFromGas() {
+  if (getRole() !== "admin") return { skipped: true };
+  if (!isOnline()) return { error: "offline" };
+
+  const url = `${GAS_URL}?secret=${encodeURIComponent(GAS_SECRET)}&adminToken=${encodeURIComponent(GAS_ADMIN_TOKEN)}`;
+  const res = await fetch(url, { method: "GET", redirect: "follow" });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error("invalid_response: " + text.slice(0, 100)); }
+  if (!data.ok) throw new Error(data.error || "unknown_error");
+
+  // ローカルとマージ：saved_at_ms / updated_at_ms の新しいほうを優先
+  const remote = data.records || [];
+  const local = loadAll();
+  const map = new Map();
+  // ローカル先入れ
+  local.forEach(r => map.set(r.id, r));
+  // リモートで上書き or 追加（タイムスタンプ比較）
+  remote.forEach(r => {
+    const existing = map.get(r.id);
+    if (!existing) {
+      map.set(r.id, r);
+    } else {
+      const localTs = existing.updated_at_ms || existing.saved_at_ms || 0;
+      const remoteTs = r.updated_at_ms || r.saved_at_ms || 0;
+      if (remoteTs >= localTs) {
+        map.set(r.id, r);
+      }
+    }
+  });
+  const merged = [...map.values()];
+  saveAll(merged);
+  localStorage.setItem(LAST_SYNC_KEY, String(Date.now()));
+  return { count: merged.length, remote: remote.length };
+}
+
+// 同期状態のバッジ更新
+function updateSyncBadge() {
+  const badge = $("#syncQueueBadge");
+  if (!badge) return;
+  const q = loadSyncQueue();
+  if (q.length > 0) {
+    badge.textContent = q.length > 99 ? "99+" : q.length;
+    badge.classList.remove("hidden");
+  } else {
+    badge.classList.add("hidden");
+  }
+}
+
+// 最終同期時刻のフォーマット
+function formatLastSync() {
+  const ts = parseInt(localStorage.getItem(LAST_SYNC_KEY) || "0", 10);
+  if (!ts) return "未同期";
+  const d = new Date(ts);
+  const now = new Date();
+  const diffMin = Math.floor((now - d) / 60000);
+  if (diffMin < 1) return "たった今";
+  if (diffMin < 60) return `${diffMin}分前`;
+  if (diffMin < 1440) return `${Math.floor(diffMin/60)}時間前`;
+  return `${d.getMonth()+1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+}
+
+// ------------ Role Management (フェーズ1) ------------
+const getRole = () => localStorage.getItem(ROLE_KEY); // "admin" | "input" | null
+const setRole = (role) => localStorage.setItem(ROLE_KEY, role);
+
+// 現在のロールに応じてUIを切り替える
+function applyRole() {
+  const role = getRole();
+  const isAdmin = role === "admin";
+  const isInput = role === "input";
+
+  // 履歴・統計タブの表示制御
+  const histTabBtn = $('.tab-btn[data-tab="history"]');
+  const statsTabBtn = $('.tab-btn[data-tab="stats"]');
+  const bellBtn = $("#bellBtn");
+  const lockBtn = $("#lockToggleBtn");
+
+  if (isAdmin) {
+    // 管理者：すべて表示
+    histTabBtn.classList.remove("hidden");
+    statsTabBtn.classList.remove("hidden");
+    bellBtn.classList.remove("hidden");
+    lockBtn.classList.remove("hidden");
+    // ロックアイコン：開いた鍵
+    $("#lockToggleIcon").innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/>`;
+    // 同期ラベル更新
+    const lastLabel = $("#lastSyncLabel");
+    if (lastLabel) lastLabel.textContent = "最終同期: " + formatLastSync();
+    updateSyncBadge();
+  } else if (isInput) {
+    // 入力専用：履歴・統計・通知ベルを隠す、入力タブを強制アクティブ
+    histTabBtn.classList.add("hidden");
+    statsTabBtn.classList.add("hidden");
+    bellBtn.classList.add("hidden");
+    lockBtn.classList.remove("hidden");
+    // 入力タブを必ずアクティブに
+    $$(".tab-btn").forEach(b => b.dataset.active = (b.dataset.tab === "input" ? "true" : "false"));
+    $("#tab-input").classList.remove("hidden");
+    $("#tab-history").classList.add("hidden");
+    $("#tab-stats").classList.add("hidden");
+    // ロックアイコン：閉じた鍵
+    $("#lockToggleIcon").innerHTML = `<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>`;
+  }
+}
+
+function setupRoleManagement() {
+  const role = getRole();
+
+  // 初回起動：ロール未選択ならモード選択モーダルを表示
+  if (!role) {
+    setTimeout(() => openModal("roleModal"), 100);
+  }
+
+  // 役割選択モーダルの選択肢
+  $("#roleSelectInput").addEventListener("click", () => {
+    setRole("input");
+    closeModal("roleModal");
+    applyRole();
+    toast("入力専用モードに設定しました");
+  });
+
+  $("#roleSelectAdmin").addEventListener("click", () => {
+    closeModal("roleModal");
+    openAdminPin(() => {
+      setRole("admin");
+      applyRole();
+      toast("管理者モードに切り替えました");
+    });
+  });
+
+  // 右下ロックボタン：現在のモードと逆へ切替
+  $("#lockToggleBtn").addEventListener("click", () => {
+    const cur = getRole();
+    if (cur === "admin") {
+      // 管理者→入力専用へ（PIN不要）
+      setRole("input");
+      applyRole();
+      toast("入力専用モードに切り替えました");
+    } else {
+      // 入力専用→管理者へ（PIN必要）
+      openAdminPin(() => {
+        setRole("admin");
+        applyRole();
+        toast("管理者モードに切り替えました");
+      });
+    }
+  });
+
+  // 管理者PIN入力モーダルの設定
+  const adminPinInput = $("#adminPinInput");
+  adminPinInput.addEventListener("input", (e) => {
+    const v = e.target.value.replace(/\D/g, "").slice(0, 4);
+    e.target.value = v;
+    updateAdminPinDots(v);
+    $("#adminPinError").classList.add("hidden");
+  });
+  adminPinInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      $("#adminPinConfirmBtn").click();
+    }
+  });
+  $("#adminPinConfirmBtn").addEventListener("click", () => {
+    const v = adminPinInput.value;
+    if (v === ADMIN_PIN) {
+      closeModal("adminPinModal");
+      if (typeof window.__adminPinCallback === "function") {
+        window.__adminPinCallback();
+        window.__adminPinCallback = null;
+      }
+    } else {
+      $("#adminPinError").classList.remove("hidden");
+    }
+  });
+
+  // 手動同期ボタン
+  setupSyncButton();
+
+  // オンライン復帰時に自動でキューフラッシュ
+  window.addEventListener("online", () => {
+    flushSyncQueue().then(result => {
+      updateSyncBadge();
+      if (result.flushed > 0) {
+        toast(`未送信 ${result.flushed} 件を同期しました`);
+      }
+    });
+  });
+
+  // 起動時にキューがあればフラッシュ試行
+  if (loadSyncQueue().length > 0 && isOnline()) {
+    flushSyncQueue().then(updateSyncBadge);
+  }
+  updateSyncBadge();
+}
+
+function setupSyncButton() {
+  const btn = $("#manualSyncBtn");
+  if (!btn) return;
+  btn.addEventListener("click", async () => {
+    if (getRole() !== "admin") {
+      toast("管理者モードでのみ使用できます");
+      return;
+    }
+    const icon = $("#syncBtnIcon");
+    btn.disabled = true;
+    btn.style.opacity = "0.6";
+    if (icon) icon.style.animation = "spin 1s linear infinite";
+    try {
+      // まず未送信キューをフラッシュ
+      const flushResult = await flushSyncQueue();
+      // 次にリモートからプル
+      const pullResult = await pullFromGas();
+      updateSyncBadge();
+      $("#lastSyncLabel").textContent = "最終同期: " + formatLastSync();
+      renderHistory();
+      renderStats();
+      let msg = `同期完了`;
+      if (flushResult.flushed > 0) msg += ` (送信 ${flushResult.flushed}件)`;
+      if (pullResult.count !== undefined) msg += ` / 全${pullResult.count}件`;
+      toast(msg);
+    } catch (err) {
+      console.error("manual sync failed:", err);
+      toast("同期に失敗: " + (err.message || err));
+    } finally {
+      btn.disabled = false;
+      btn.style.opacity = "";
+      if (icon) icon.style.animation = "";
+    }
+  });
+}
+
+function openAdminPin(onSuccess) {
+  $("#adminPinInput").value = "";
+  $("#adminPinError").classList.add("hidden");
+  updateAdminPinDots("");
+  window.__adminPinCallback = onSuccess;
+  openModal("adminPinModal");
+  setTimeout(() => $("#adminPinInput").focus(), 100);
+}
+
+function updateAdminPinDots(v) {
+  $$("#adminPinDots .pin-dot").forEach((d, i) => {
+    d.dataset.filled = v.length > i ? "true" : "false";
+    d.textContent = v[i] ? "●" : "";
+  });
 }
 
 function refreshReporterList() {
@@ -1565,6 +2056,8 @@ function setupTabs() {
   $$(".tab-btn").forEach(b => {
     b.addEventListener("click", () => {
       const target = b.dataset.tab;
+      // 入力専用モードでは入力タブ以外への切替を無効化
+      if (getRole() === "input" && target !== "input") return;
       $$(".tab-btn").forEach(x => x.dataset.active = (x === b ? "true" : "false"));
       $("#tab-input").classList.toggle("hidden", target !== "input");
       $("#tab-history").classList.toggle("hidden", target !== "history");
@@ -1697,6 +2190,7 @@ function setupSaveFlow() {
     confirmBtn.style.opacity = "0.6";
     confirmBtn.style.pointerEvents = "none";
 
+    let savedRecord = null;
     try {
       const all = loadAll();
       if (editingId) {
@@ -1710,10 +2204,12 @@ function setupSaveFlow() {
         } else {
           all.push(record);
         }
+        savedRecord = record;
       } else {
         const record = buildRecord();
         record.created_at_ms = record.saved_at_ms;
         all.push(record);
+        savedRecord = record;
       }
       saveAll(all);
       refreshReporterList();
@@ -1726,6 +2222,17 @@ function setupSaveFlow() {
         confirmBtn.style.opacity = "";
         confirmBtn.style.pointerEvents = "";
       }, 200);
+    }
+
+    // GASへ非同期送信（失敗してもUIには影響しない）
+    if (savedRecord) {
+      syncSaveRecord(savedRecord).then(result => {
+        updateSyncBadge();
+        if (result.queued) {
+          // オフライン or 失敗時は控えめな通知
+          console.info("記録は端末に保存され、後で同期されます");
+        }
+      });
     }
   });
 
@@ -1945,6 +2452,9 @@ function deleteRecord(id) {
   renderHistory();
   renderStats();
   toast("削除しました");
+
+  // GAS 側からも削除（管理者モード時のみ送信）
+  syncDeleteRecord(id).then(() => updateSyncBadge());
 }
 
 function getActiveDays(filterSel) {
