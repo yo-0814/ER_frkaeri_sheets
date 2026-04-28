@@ -1245,13 +1245,57 @@
    ER Team Reflection — App Logic
    Storage: LocalStorage key "er_reflection_v1"
 
-   データ仕様メモ:
-   - record.case.items[]   : 振り返りケース（新形式・複数件）
-   - record.case.{type, case_id, content} : 旧形式（読み取り専用・新規保存はしない）
-   - record.good_jobs[]    : good job（新形式）
-   - record.success_cases[]: 旧形式（読み取り専用・新規保存はしない）
+   ─────────────────────────────────────────────────────────────────
+   📦 LocalStorage キー一覧
+   ─────────────────────────────────────────────────────────────────
+   - er_reflection_v1            : 振り返り記録の本体（配列）
+   - er_reflection_read_v1       : 既読の共有事項ID
+   - er_reflection_role_v1       : "admin" | "input"（モード）
+   - er_reflection_sync_queue_v1 : GAS未送信のリクエストキュー
+   - er_reflection_last_sync_v1  : 最終同期時刻（ms）
+
+   ─────────────────────────────────────────────────────────────────
+   📋 record データ構造（1件分）
+   ─────────────────────────────────────────────────────────────────
+   {
+     id, date, saved_time, saved_at_ms,
+     created_at_ms?, updated_at_ms?,
+     shift: "日勤" | "夜勤",
+     team: { nurses, doctors },
+     reporter,
+     workload: { break_secured, short_min, short_people, help_requested, no_help_reason },
+     team_state: { team_collab, team_collab_note, external_collab, ..., psych_safety_note },
+     patient_care: { hospitality, wait_care, anxiety_relief, comment },
+     case: { exists, items: [{ type, age, gender, chief_complaint, content }, ...] },
+     good_jobs: [{ target, comment }, ...],
+     share
+   }
+
+   ─────────────────────────────────────────────────────────────────
+   🔄 旧形式互換（読み取りのみ・新規保存時には新形式を使う）
+   ─────────────────────────────────────────────────────────────────
+   - record.case.{type, case_id, content}  → getCaseItems() で吸収
+   - record.success_cases[]                → getGoodJobs() で吸収
+
+   ─────────────────────────────────────────────────────────────────
+   🌐 GAS バックエンド（フェーズ3で追加）
+   ─────────────────────────────────────────────────────────────────
+   - 保存時：localStorage に即時保存 + GAS にも非同期 POST
+   - 失敗時：未送信キューに追加（オンライン復帰や同期ボタンで再送）
+   - 管理者モード：「同期」ボタンで GAS から最新を取得して反映
+     （GAS を「正」とし、GAS に無い記録はローカルからも削除。
+      ただし未送信キューに入っているものは保護する）
+
+   ─────────────────────────────────────────────────────────────────
+   🔐 ロール（フェーズ1で追加）
+   ─────────────────────────────────────────────────────────────────
+   - "admin" : 入力 + 履歴 + 統計 + 同期ボタン + CSV出力
+   - "input" : 入力タブのみ（保存は GAS にも送信される）
 ================================================================ */
 
+// ════════════════════════════════════════════════════════════════
+//  定数
+// ════════════════════════════════════════════════════════════════
 const STORAGE_KEY = "er_reflection_v1";
 const READ_KEY = "er_reflection_read_v1";
 const ROLE_KEY = "er_reflection_role_v1";  // "admin" | "input"
@@ -1260,13 +1304,14 @@ const LAST_SYNC_KEY = "er_reflection_last_sync_v1";   // 最終同期時刻
 const PIN_CODE = "0000";
 const ADMIN_PIN = "0000"; // 管理者モード切替用（CSVエクスポートと共通）
 
-// ====== GAS バックエンド設定 ======
+// ─── GAS バックエンド設定 ───
 const GAS_URL = "https://script.google.com/macros/s/AKfycbx1TPRBG31Ug5BZzS4nVOrEK540pdctk0CfxoLAgt0lTTWdd24VkmBoPz379OyVnxvS/exec";
 const GAS_SECRET = "8h2k9m4p7q3r6s1t8u5v9w2x6y4z7a3b";
 const GAS_ADMIN_TOKEN = "4d6f9g2h5j8k1m4n7p3q6r9s2t5u8v1w";
-// ================================
 
-// ------------ State ------------
+// ════════════════════════════════════════════════════════════════
+//  フォーム入力中の状態（保存前のメモリ上の状態）
+// ════════════════════════════════════════════════════════════════
 let formState = {
   shift: null,
   break_secured: null,
@@ -1283,7 +1328,9 @@ let statsChartMode = "bar";
 let shareReadTimer = null;
 let isSaving = false;
 
-// ------------ Helpers ------------
+// ════════════════════════════════════════════════════════════════
+//  汎用ヘルパー（DOM・日付・ストレージ・形式変換）
+// ════════════════════════════════════════════════════════════════
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 const pad2 = n => String(n).padStart(2, "0");
@@ -1343,6 +1390,9 @@ function debounce(fn, wait) {
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
 }
 
+// ════════════════════════════════════════════════════════════════
+//  初期化（アプリ起動時のメインエントリポイント）
+// ════════════════════════════════════════════════════════════════
 function init() {
   $("#f_date").value = todayIso();
 
@@ -1365,6 +1415,9 @@ function init() {
   applyRole();  // ← 追加：UIに現在のロールを反映
 }
 
+// ════════════════════════════════════════════════════════════════
+//  Good Jobs（任意・複数件）— 動的UI生成
+// ════════════════════════════════════════════════════════════════
 function setupGoodJobs() {
   $("#addGoodJobBtn").addEventListener("click", () => addGoodJob());
 }
@@ -1426,6 +1479,9 @@ function readGoodJobs() {
   })).filter(g => g.target || g.comment);
 }
 
+// ════════════════════════════════════════════════════════════════
+//  振り返りケース（複数件）— 動的UI生成
+// ════════════════════════════════════════════════════════════════
 function setupCases() {
   $("#addCaseBtn").addEventListener("click", () => addCase());
 }
@@ -1517,7 +1573,11 @@ function readCases() {
   })).filter(c => c.type || c.age || c.gender || c.chief_complaint || c.content);
 }
 
-// ------------ GAS Sync (フェーズ3) ------------
+// ════════════════════════════════════════════════════════════════
+//  GAS バックエンドとの同期（フェーズ3）
+//  保存・削除のキューイング、オンライン復帰時の自動再送、
+//  管理者モードでの「同期」ボタン処理
+// ════════════════════════════════════════════════════════════════
 // オンライン状態の確認
 const isOnline = () => navigator.onLine !== false;
 
@@ -1747,7 +1807,10 @@ function formatLastSync() {
   return `${d.getMonth()+1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
-// ------------ Role Management (フェーズ1) ------------
+// ════════════════════════════════════════════════════════════════
+//  ロール管理（フェーズ1）
+//  入力専用 / 管理者 の切替、UI表示制御、PIN 認証
+// ════════════════════════════════════════════════════════════════
 const getRole = () => localStorage.getItem(ROLE_KEY); // "admin" | "input" | null
 const setRole = (role) => localStorage.setItem(ROLE_KEY, role);
 
@@ -1933,6 +1996,9 @@ function updateAdminPinDots(v) {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  記録者名の補完候補（datalist 更新）
+// ════════════════════════════════════════════════════════════════
 function refreshReporterList() {
   const dl = $("#reporterList");
   if (!dl) return;
@@ -1956,6 +2022,9 @@ const loadReadIds = () => {
 };
 const saveReadIds = (set) => localStorage.setItem(READ_KEY, JSON.stringify([...set]));
 
+// ════════════════════════════════════════════════════════════════
+//  共有事項の通知（ベルアイコン・既読管理）
+// ════════════════════════════════════════════════════════════════
 function getShareRecords() {
   return loadAll()
     .filter(r => r.share && r.share.trim())
@@ -2030,6 +2099,11 @@ function setupNotification() {
   $("#bellBtn").addEventListener("click", openShareModal);
 }
 
+// ════════════════════════════════════════════════════════════════
+//  セグメントボタン（日勤/夜勤、良い/普通/悪い 等）
+// ════════════════════════════════════════════════════════════════
+// セグメントボタンの選択状態を変更する統一ヘルパー。
+// ユーザー操作・プログラム的な復元のどちらからも呼べる。
 function selectSeg(field, val) {
   const group = $(`[data-seg-field="${field}"]`);
   if (!group) return;
@@ -2080,6 +2154,9 @@ function handleConditionals(field, val) {
   }
 }
 
+// ════════════════════════════════════════════════════════════════
+//  数値ステッパー（人数・分数の +/− ボタン）
+// ════════════════════════════════════════════════════════════════
 function setupSteppers() {
   $$("[data-stp]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -2095,6 +2172,9 @@ function setupSteppers() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  タブ切替（入力 / 履歴 / 統計）
+// ════════════════════════════════════════════════════════════════
 function setupTabs() {
   $$(".tab-btn").forEach(b => {
     b.addEventListener("click", () => {
@@ -2112,6 +2192,9 @@ function setupTabs() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  フィルタ（履歴・統計の絞り込み）
+// ════════════════════════════════════════════════════════════════
 function setupFilters() {
   $$('[data-filter-toggle]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2205,6 +2288,9 @@ function getSelectedChipValues(kind, key) {
   return $$('.chip[data-active="true"]', group).map(c => c.dataset.val).filter(Boolean);
 }
 
+// ════════════════════════════════════════════════════════════════
+//  保存・編集・削除フロー（モーダル制御も含む）
+// ════════════════════════════════════════════════════════════════
 function setupSaveFlow() {
   $("#saveBtn").addEventListener("click", () => {
     const missing = [];
@@ -2500,6 +2586,9 @@ function deleteRecord(id) {
   syncDeleteRecord(id).then(() => updateSyncBadge());
 }
 
+// ════════════════════════════════════════════════════════════════
+//  履歴・統計の共通フィルタ処理（期間・属性・フリー検索）
+// ════════════════════════════════════════════════════════════════
 function getActiveDays(filterSel) {
   const a = $(`${filterSel} .chip[data-active="true"]`);
   return a ? parseInt(a.dataset.days, 10) : 7;
@@ -2578,6 +2667,12 @@ function ratingDot(r) {
   return `<span class="inline-block w-2 h-2 rounded-full" style="background:${c}"></span>`;
 }
 
+// ════════════════════════════════════════════════════════════════
+//  Good Job 月間ランキング（履歴タブの上部に表示）
+// ════════════════════════════════════════════════════════════════
+// 現在の月（その月の1日 00:00 〜 月末 23:59:59）の good job のみを集計。
+// 月初に自動的にリセットされる（前月以前のデータはランキング対象外）。
+// 履歴タブの期間フィルター（過去7日/30日/90日/全期間）からは独立。
 function renderRanking(allRecords) {
   const panel = $("#rankingPanel");
   const body = $("#rankingBody");
@@ -2682,6 +2777,9 @@ function renderRanking(allRecords) {
   `;
 }
 
+// ════════════════════════════════════════════════════════════════
+//  履歴カードの組み立て（個別パーツとカード全体）
+// ════════════════════════════════════════════════════════════════
 function histShiftBadge(shift) {
   return shift === "夜勤"
     ? `<span class="badge badge-night">🌙 夜勤</span>`
@@ -2813,6 +2911,9 @@ function histCardHtml(r) {
     </div>`;
 }
 
+// ════════════════════════════════════════════════════════════════
+//  履歴タブ：レンダリング
+// ════════════════════════════════════════════════════════════════
 function renderHistory() {
   const days = getActiveDays("#histFilter");
   const baseRecords = filterByDays(loadAll(), days);
@@ -2849,6 +2950,9 @@ function renderHistory() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  統計タブ：レンダリング（評価スコア・休憩状況・分布グラフ）
+// ════════════════════════════════════════════════════════════════
 function rateToNum(r) {
   return r === "良い" ? 3 : r === "普通" ? 2 : r === "悪い" ? 1 : null;
 }
@@ -3165,6 +3269,9 @@ function renderStats() {
   });
 }
 
+// ════════════════════════════════════════════════════════════════
+//  CSV エクスポート（PIN認証付き）
+// ════════════════════════════════════════════════════════════════
 function setupExport() {
   $("#exportBtn").addEventListener("click", () => {
     $("#pinInput").value = "";
@@ -3263,6 +3370,9 @@ function doExport() {
   toast("CSVをダウンロードしました");
 }
 
+// ════════════════════════════════════════════════════════════════
+//  エントリポイント
+// ════════════════════════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", init);
 </script>
 </body>
