@@ -585,6 +585,160 @@
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
   }
+
+  /* スタッフ選択 UI */
+  .staff-select {
+    position: relative;
+    width: 100%;
+  }
+  .staff-select-trigger {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1.5px solid var(--line-strong);
+    background: #fff;
+    border-radius: 10px;
+    padding: 12px 40px 12px 14px;
+    font-size: 16px;
+    color: var(--navy-900);
+    text-align: left;
+    cursor: pointer;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231b3a6b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .staff-select-trigger:focus,
+  .staff-select[data-open="true"] .staff-select-trigger {
+    outline: none;
+    border-color: var(--blue-500);
+    box-shadow: 0 0 0 3px rgba(47,111,184,0.15);
+  }
+  .staff-select-placeholder { color: var(--muted); }
+  .staff-select-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1.5px solid var(--line-strong);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px -10px rgba(11,30,63,0.25);
+    z-index: 25;
+    max-height: 280px;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+  }
+  .staff-select[data-open="true"] .staff-select-dropdown {
+    display: flex;
+  }
+  .staff-select-search-wrap {
+    padding: 10px;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .staff-select-search {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+  }
+  .staff-select-search:focus {
+    border-color: var(--blue-500);
+  }
+  .staff-select-list {
+    overflow-y: auto;
+    flex: 1;
+    min-height: 40px;
+  }
+  .staff-select-option {
+    padding: 10px 14px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--navy-900);
+    border-bottom: 1px solid var(--line);
+    transition: background .1s;
+  }
+  .staff-select-option:hover,
+  .staff-select-option[data-active="true"] {
+    background: var(--soft-info);
+  }
+  .staff-select-option[data-selected="true"] {
+    background: var(--navy-800);
+    color: #fff;
+    font-weight: 600;
+  }
+  .staff-select-empty {
+    padding: 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .staff-select-add {
+    padding: 12px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--blue-500);
+    font-weight: 600;
+    background: var(--paper);
+    border-top: 1px solid var(--line);
+    text-align: center;
+    flex-shrink: 0;
+    transition: background .1s;
+  }
+  .staff-select-add:hover {
+    background: var(--soft-info);
+  }
+  .staff-select-add:active {
+    background: #e0e8f3;
+  }
+
+  /* スタッフ管理画面 */
+  .staff-mgr-list {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--paper);
+  }
+  .staff-mgr-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+  }
+  .staff-mgr-row:last-child { border-bottom: none; }
+  .staff-mgr-row input {
+    flex: 1;
+    border: 1px solid var(--line-strong);
+    background: #fff;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 14px;
+    outline: none;
+  }
+  .staff-mgr-row input:focus { border-color: var(--blue-500); }
+  .staff-mgr-row button {
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid transparent;
+    cursor: pointer;
+  }
 </style>
 </head>
 <body class="pb-24">
@@ -673,8 +827,19 @@
         </div>
         <div class="col-span-2">
           <label class="lbl lbl-required">記録者名</label>
-          <input type="text" id="f_reporter" class="fld" list="reporterList" autocomplete="off" />
-          <datalist id="reporterList"></datalist>
+          <div class="staff-select" data-staff-select="reporter">
+            <button type="button" class="staff-select-trigger" data-staff-trigger>
+              <span class="staff-select-placeholder" data-staff-label>名前を選択...</span>
+            </button>
+            <div class="staff-select-dropdown">
+              <div class="staff-select-search-wrap">
+                <input type="text" class="staff-select-search" data-staff-search placeholder="検索..." />
+              </div>
+              <div class="staff-select-list" data-staff-list></div>
+              <div class="staff-select-add" data-staff-add>+ 新しい人を追加</div>
+            </div>
+          </div>
+          <input type="hidden" id="f_reporter" />
         </div>
       </div>
     </div>
@@ -1084,6 +1249,19 @@
 
     <div id="statsContent"></div>
 
+    <!-- スタッフ名簿管理 -->
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="font-display font-bold text-[15px]">スタッフ名簿管理</div>
+      </div>
+      <p class="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">記録者・good job 対象者の選択肢に表示される名前を管理します。表記ゆれを防ぐため、追加した名前を全員で共有して使ってください。</p>
+      <button id="staffMgrBtn" class="btn-secondary w-full flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        スタッフを追加・編集
+      </button>
+    </div>
+
     <!-- CSV export -->
     <div class="card p-5 border-dashed">
       <div class="flex items-center gap-2 mb-2">
@@ -1258,6 +1436,33 @@
   </div>
 </div>
 
+<!-- ============ MODAL: STAFF MANAGER ============ -->
+<div class="modal-backdrop" id="staffMgrModal">
+  <div class="share-modal">
+    <div class="share-modal-header">
+      <div class="flex items-center gap-2">
+        <svg viewBox="0 0 24 24" width="20" height="20" class="ico text-[var(--navy-700)]"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <div class="font-display font-bold text-[16px]">スタッフ管理</div>
+        <span class="text-[11px] text-[var(--muted)]" id="staffMgrCount">0人</span>
+      </div>
+      <button class="text-[var(--muted)] p-2 -m-2" onclick="closeModal('staffMgrModal')" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" width="20" height="20" class="ico"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div class="share-modal-body">
+      <div class="flex gap-2 mb-3">
+        <input type="text" id="staffMgrAddInput" class="fld" placeholder="新しいスタッフ名を入力..." />
+        <button id="staffMgrAddBtn" class="btn-primary flex items-center justify-center gap-1 px-4" style="font-size:14px;padding:0 16px;flex-shrink:0">
+          <svg viewBox="0 0 24 24" width="14" height="14" class="ico"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          追加
+        </button>
+      </div>
+      <div class="staff-mgr-list" id="staffMgrList"></div>
+      <p class="text-[11px] text-[var(--muted)] mt-3 leading-relaxed">編集後は「保存」ボタンで反映されます。削除すると過去の記録の名前は変わりませんが、選択肢からは消えます。</p>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODAL: PIN ============ -->
 <div class="modal-backdrop" id="pinModal">
   <div class="modal">
@@ -1364,6 +1569,7 @@
    - er_reflection_role_v1       : "admin" | "input"（モード）
    - er_reflection_sync_queue_v1 : GAS未送信のリクエストキュー
    - er_reflection_last_sync_v1  : 最終同期時刻（ms）
+   - er_reflection_staff_v1      : スタッフ名簿（配列）
 
    ─────────────────────────────────────────────────────────────────
    📋 record データ構造（1件分）
@@ -1412,6 +1618,7 @@ const READ_KEY = "er_reflection_read_v1";
 const ROLE_KEY = "er_reflection_role_v1";  // "admin" | "input"
 const SYNC_QUEUE_KEY = "er_reflection_sync_queue_v1"; // 未送信キュー
 const LAST_SYNC_KEY = "er_reflection_last_sync_v1";   // 最終同期時刻
+const STAFF_KEY = "er_reflection_staff_v1";           // スタッフ名簿
 const PIN_CODE = "0000";
 const ADMIN_PIN = "0000"; // 管理者モード切替用（CSVエクスポートと共通）
 
@@ -1517,7 +1724,9 @@ function init() {
   setupNotification();
   setupGoodJobs();
   setupCases();
-  setupRoleManagement();  // ← 追加
+  setupRoleManagement();
+  setupStaffManager();
+  initAllStaffSelects();
   refreshReporterList();
   refreshNotificationBadge();
 
@@ -1552,7 +1761,19 @@ function addGoodJob(initial) {
     <div class="space-y-2">
       <div>
         <label class="lbl">対象者</label>
-        <input type="text" class="fld" data-goodjob-target list="reporterList" autocomplete="off" placeholder="名前を入力" value="${escapeHtml(target)}" />
+        <div class="staff-select" data-staff-select="goodjob">
+          <button type="button" class="staff-select-trigger" data-staff-trigger>
+            <span class="staff-select-placeholder" data-staff-label>名前を選択...</span>
+          </button>
+          <div class="staff-select-dropdown">
+            <div class="staff-select-search-wrap">
+              <input type="text" class="staff-select-search" data-staff-search placeholder="検索..." />
+            </div>
+            <div class="staff-select-list" data-staff-list></div>
+            <div class="staff-select-add" data-staff-add>+ 新しい人を追加</div>
+          </div>
+        </div>
+        <input type="hidden" data-goodjob-target value="${escapeHtml(target)}" />
       </div>
       <div>
         <label class="lbl">コメント</label>
@@ -1569,6 +1790,9 @@ function addGoodJob(initial) {
     }
   });
   list.appendChild(wrap);
+  // 動的に追加された staff-select を初期化
+  const sel = wrap.querySelector(".staff-select");
+  if (sel) initStaffSelect(sel);
   return wrap;
 }
 
@@ -1683,6 +1907,474 @@ function readCases() {
     chief_complaint: el.querySelector("[data-case-chief]").value.trim(),
     content: el.querySelector("[data-case-content]").value.trim(),
   })).filter(c => c.type || c.age || c.gender || c.chief_complaint || c.content);
+}
+
+// ════════════════════════════════════════════════════════════════
+//  スタッフ名簿（記録者・good job対象者の選択肢）
+// ════════════════════════════════════════════════════════════════
+
+// 初期スタッフ名簿（最初に名簿が空の場合のデフォルト）
+const DEFAULT_STAFF = [
+  // 必要に応じてこの配列にスタッフ名を追加してください
+  // 例: { name: "大江洋" }, { name: "佐藤美穂" }
+];
+
+const loadStaff = () => {
+  try {
+    const arr = JSON.parse(localStorage.getItem(STAFF_KEY) || "null");
+    if (Array.isArray(arr)) return arr;
+  } catch {}
+  // 初期値を投入
+  const initial = DEFAULT_STAFF.map(s => ({
+    id: "s_" + Math.random().toString(36).slice(2, 9),
+    name: s.name,
+    created_at_ms: Date.now(),
+  }));
+  saveStaff(initial);
+  return initial;
+};
+const saveStaff = (arr) => localStorage.setItem(STAFF_KEY, JSON.stringify(arr));
+
+// 名前の正規化（全角/半角空白除去・前後空白トリム）
+function normalizeStaffName(name) {
+  return String(name || "").replace(/[\s　]+/g, "").trim();
+}
+
+// スタッフを追加（重複チェック）。既存があれば既存のレコードを返す
+function addStaff(name) {
+  const trimmed = String(name || "").trim();
+  if (!trimmed) return null;
+  const all = loadStaff();
+  const norm = normalizeStaffName(trimmed);
+  const existing = all.find(s => normalizeStaffName(s.name) === norm);
+  if (existing) return existing;
+  const newStaff = {
+    id: "s_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+    name: trimmed,
+    created_at_ms: Date.now(),
+  };
+  all.push(newStaff);
+  saveStaff(all);
+  // GAS にも非同期で送信
+  syncStaffAdd(newStaff).catch(err => console.warn("staff_add sync failed:", err));
+  return newStaff;
+}
+
+// スタッフ名を更新
+function updateStaff(id, newName) {
+  const trimmed = String(newName || "").trim();
+  if (!trimmed) return false;
+  const all = loadStaff();
+  const idx = all.findIndex(s => s.id === id);
+  if (idx < 0) return false;
+  // 同名の別レコードと重複しないかチェック
+  const norm = normalizeStaffName(trimmed);
+  const dup = all.find(s => s.id !== id && normalizeStaffName(s.name) === norm);
+  if (dup) return false; // 重複あり
+  all[idx].name = trimmed;
+  all[idx].updated_at_ms = Date.now();
+  saveStaff(all);
+  // GAS にも非同期で送信（管理者のみ）
+  syncStaffUpdate(all[idx]).catch(err => console.warn("staff_update sync failed:", err));
+  return true;
+}
+
+// スタッフを削除
+function removeStaff(id) {
+  const all = loadStaff();
+  const idx = all.findIndex(s => s.id === id);
+  if (idx < 0) return false;
+  all.splice(idx, 1);
+  saveStaff(all);
+  // GAS にも非同期で送信（管理者のみ）
+  syncStaffDelete(id).catch(err => console.warn("staff_delete sync failed:", err));
+  return true;
+}
+
+// ─── スタッフ同期：GAS への送信 ─────────────────────
+async function syncStaffAdd(staff) {
+  if (!isOnline()) {
+    enqueueSync("staff_add", staff);
+    return { queued: true };
+  }
+  try {
+    await postToGas({
+      secret: GAS_SECRET,
+      action: "staff_add",
+      staff: staff,
+    });
+    return { synced: true };
+  } catch (err) {
+    console.warn("GAS staff_add failed, queuing:", err);
+    enqueueSync("staff_add", staff);
+    return { queued: true, error: String(err) };
+  }
+}
+
+async function syncStaffUpdate(staff) {
+  if (getRole() !== "admin") return { skipped: true };
+  if (!isOnline()) {
+    enqueueSync("staff_update", staff);
+    return { queued: true };
+  }
+  try {
+    await postToGas({
+      secret: GAS_SECRET,
+      action: "staff_update",
+      adminToken: GAS_ADMIN_TOKEN,
+      staff: staff,
+    });
+    return { synced: true };
+  } catch (err) {
+    console.warn("GAS staff_update failed, queuing:", err);
+    enqueueSync("staff_update", staff);
+    return { queued: true, error: String(err) };
+  }
+}
+
+async function syncStaffDelete(id) {
+  if (getRole() !== "admin") return { skipped: true };
+  if (!isOnline()) {
+    enqueueSync("staff_delete", { id });
+    return { queued: true };
+  }
+  try {
+    await postToGas({
+      secret: GAS_SECRET,
+      action: "staff_delete",
+      adminToken: GAS_ADMIN_TOKEN,
+      id: id,
+    });
+    return { synced: true };
+  } catch (err) {
+    const msg = String(err.message || err);
+    if (msg.includes("not_found")) return { synced: true };
+    console.warn("GAS staff_delete failed, queuing:", err);
+    enqueueSync("staff_delete", { id });
+    return { queued: true, error: String(err) };
+  }
+}
+
+// GAS からスタッフ名簿をプル（誰でも実行可能）
+// GAS を「正」とするが、未送信キューにあるスタッフは保護する
+async function pullStaffFromGas() {
+  if (!isOnline()) return { error: "offline" };
+
+  const url = `${GAS_URL}?secret=${encodeURIComponent(GAS_SECRET)}&action=staff`;
+  const res = await fetch(url, { method: "GET", redirect: "follow" });
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); }
+  catch { throw new Error("invalid_response: " + text.slice(0, 100)); }
+  if (!data.ok) throw new Error(data.error || "unknown_error");
+
+  const remote = data.staff || [];
+  const local = loadStaff();
+
+  // 未送信キューにあるIDは保護
+  const queue = loadSyncQueue();
+  const protectedIds = new Set();
+  queue.forEach(item => {
+    if ((item.action === "staff_add" || item.action === "staff_update") &&
+        item.payload && item.payload.id) {
+      protectedIds.add(item.payload.id);
+    }
+  });
+
+  const map = new Map();
+  remote.forEach(s => { if (s && s.id) map.set(s.id, s); });
+  local.forEach(s => {
+    if (!s || !s.id) return;
+    if (protectedIds.has(s.id)) {
+      const remoteRec = map.get(s.id);
+      if (!remoteRec) {
+        map.set(s.id, s);
+      } else {
+        const localTs = s.updated_at_ms || s.created_at_ms || 0;
+        const remoteTs = remoteRec.updated_at_ms || remoteRec.created_at_ms || 0;
+        if (localTs >= remoteTs) map.set(s.id, s);
+      }
+    }
+  });
+
+  const merged = [...map.values()];
+  saveStaff(merged);
+  return { count: merged.length, remote: remote.length };
+}
+
+// 名前で並べ替えたスタッフ一覧を取得
+function getStaffList() {
+  return [...loadStaff()].sort((a, b) =>
+    (a.name || "").localeCompare(b.name || "", "ja")
+  );
+}
+
+// ─── スタッフ選択 UI（カスタムプルダウン）──────────────────────
+// .staff-select コンポーネントの動作を制御する。
+// - data-staff-select : フィールド識別子
+// - data-staff-trigger : クリックで開閉するボタン
+// - data-staff-label   : 選択中の名前表示
+// - data-staff-search  : 検索ボックス
+// - data-staff-list    : 候補リストのコンテナ
+// - data-staff-add     : 「+ 新しい人を追加」ボタン
+
+function initStaffSelect(container) {
+  if (!container || container.dataset.initialized === "true") return;
+  container.dataset.initialized = "true";
+
+  const trigger = container.querySelector("[data-staff-trigger]");
+  const label = container.querySelector("[data-staff-label]");
+  const dropdown = container.querySelector(".staff-select-dropdown");
+  const searchInput = container.querySelector("[data-staff-search]");
+  const list = container.querySelector("[data-staff-list]");
+  const addBtn = container.querySelector("[data-staff-add]");
+
+  // 値の保存先（hidden input）
+  // 記録者は #f_reporter、good jobは同じwrapper直後の[data-goodjob-target]
+  const getHiddenInput = () => {
+    if (container.dataset.staffSelect === "reporter") {
+      return $("#f_reporter");
+    } else if (container.dataset.staffSelect === "goodjob") {
+      // 同じ親要素配下のhidden inputを探す
+      const wrap = container.closest("[data-good-job]");
+      return wrap ? wrap.querySelector("[data-goodjob-target]") : null;
+    }
+    return null;
+  };
+
+  // 表示更新
+  function updateLabel(name) {
+    if (name) {
+      label.textContent = name;
+      label.classList.remove("staff-select-placeholder");
+    } else {
+      label.textContent = "名前を選択...";
+      label.classList.add("staff-select-placeholder");
+    }
+  }
+
+  // hidden inputの値を取って表示に反映
+  function syncFromHidden() {
+    const hidden = getHiddenInput();
+    if (hidden) updateLabel(hidden.value);
+  }
+
+  // 値を設定
+  function setValue(name) {
+    const hidden = getHiddenInput();
+    if (hidden) hidden.value = name || "";
+    updateLabel(name);
+  }
+
+  // 候補リストを描画
+  function renderList(filter = "") {
+    const staff = getStaffList();
+    const q = String(filter || "").trim().toLowerCase();
+    const filtered = q
+      ? staff.filter(s => s.name.toLowerCase().includes(q))
+      : staff;
+    const hidden = getHiddenInput();
+    const currentValue = hidden ? hidden.value : "";
+
+    if (filtered.length === 0) {
+      if (staff.length === 0) {
+        list.innerHTML = `<div class="staff-select-empty">スタッフがまだ登録されていません。<br>下の「新しい人を追加」から登録してください。</div>`;
+      } else {
+        list.innerHTML = `<div class="staff-select-empty">該当する候補がありません</div>`;
+      }
+      return;
+    }
+
+    list.innerHTML = filtered.map(s => {
+      const isSelected = s.name === currentValue;
+      return `<div class="staff-select-option" data-name="${escapeHtml(s.name)}" data-selected="${isSelected}">${escapeHtml(s.name)}</div>`;
+    }).join("");
+
+    // クリックハンドラ
+    list.querySelectorAll(".staff-select-option").forEach(opt => {
+      opt.addEventListener("click", () => {
+        setValue(opt.dataset.name);
+        close();
+      });
+    });
+  }
+
+  function open() {
+    container.dataset.open = "true";
+    syncFromHidden();
+    searchInput.value = "";
+    renderList();
+    setTimeout(() => searchInput.focus(), 50);
+  }
+
+  function close() {
+    container.dataset.open = "false";
+  }
+
+  trigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (container.dataset.open === "true") close();
+    else {
+      // 他の開いているセレクトを閉じる
+      $$(".staff-select[data-open=\"true\"]").forEach(c => c.dataset.open = "false");
+      open();
+    }
+  });
+
+  searchInput.addEventListener("input", () => renderList(searchInput.value));
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") close();
+    else if (e.key === "Enter") {
+      e.preventDefault();
+      // 1件だけにフィルタされていればそれを選択、無ければ追加候補
+      const opts = list.querySelectorAll(".staff-select-option");
+      if (opts.length === 1) {
+        setValue(opts[0].dataset.name);
+        close();
+      } else if (opts.length === 0 && searchInput.value.trim()) {
+        // 入力中の名前で新規追加
+        handleAdd(searchInput.value.trim());
+      }
+    }
+  });
+
+  addBtn.addEventListener("click", () => {
+    const name = (searchInput.value || "").trim();
+    handleAdd(name);
+  });
+
+  function handleAdd(initialName) {
+    const promptedName = window.prompt("追加するスタッフ名を入力してください", initialName || "");
+    if (promptedName === null) return; // キャンセル
+    const trimmed = promptedName.trim();
+    if (!trimmed) {
+      toast("名前を入力してください");
+      return;
+    }
+    const result = addStaff(trimmed);
+    if (result) {
+      setValue(result.name);
+      close();
+      toast(`「${result.name}」を追加しました`);
+      // 全選択UIを更新（他のセレクトの候補にも反映）
+      refreshAllStaffSelects();
+    }
+  }
+
+  // 外側クリックで閉じる
+  document.addEventListener("click", (e) => {
+    if (!container.contains(e.target) && container.dataset.open === "true") {
+      close();
+    }
+  });
+
+  // 初期表示
+  syncFromHidden();
+}
+
+// 全 staff-select コンポーネントを初期化
+function initAllStaffSelects() {
+  $$(".staff-select").forEach(initStaffSelect);
+}
+
+// 候補リストだけリフレッシュ（選択UIは既存）
+function refreshAllStaffSelects() {
+  $$(".staff-select[data-initialized=\"true\"]").forEach(container => {
+    if (container.dataset.open === "true") {
+      const search = container.querySelector("[data-staff-search]");
+      const list = container.querySelector("[data-staff-list]");
+      // 開いていれば再描画
+      const trigger = container.querySelector("[data-staff-trigger]");
+      // 簡易: triggerクリックで再描画される仕組みを使うのは煩雑なので、
+      // ここでは閉じた状態のみ気にする（開閉時に毎回renderされるため）
+    }
+  });
+}
+
+// ─── スタッフ管理画面 ─────────────────────────────────────────
+function setupStaffManager() {
+  const btn = $("#staffMgrBtn");
+  if (btn) btn.addEventListener("click", openStaffManager);
+
+  const addInput = $("#staffMgrAddInput");
+  const addBtn = $("#staffMgrAddBtn");
+  if (addBtn && addInput) {
+    addBtn.addEventListener("click", () => {
+      const name = addInput.value.trim();
+      if (!name) { toast("名前を入力してください"); return; }
+      const all = loadStaff();
+      const norm = normalizeStaffName(name);
+      const exists = all.find(s => normalizeStaffName(s.name) === norm);
+      if (exists) {
+        toast("同じ名前が既に登録されています");
+        return;
+      }
+      addStaff(name);
+      addInput.value = "";
+      renderStaffManagerList();
+      toast(`「${name}」を追加しました`);
+    });
+    addInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addBtn.click();
+      }
+    });
+  }
+}
+
+function openStaffManager() {
+  renderStaffManagerList();
+  openModal("staffMgrModal");
+  setTimeout(() => $("#staffMgrAddInput")?.focus(), 100);
+}
+
+function renderStaffManagerList() {
+  const list = $("#staffMgrList");
+  const countEl = $("#staffMgrCount");
+  if (!list || !countEl) return;
+  const all = getStaffList();
+  countEl.textContent = `${all.length}人`;
+
+  if (all.length === 0) {
+    list.innerHTML = `<div class="share-empty">まだスタッフが登録されていません</div>`;
+    return;
+  }
+
+  list.innerHTML = all.map(s => `
+    <div class="staff-mgr-row" data-id="${escapeHtml(s.id)}">
+      <input type="text" value="${escapeHtml(s.name)}" data-staff-name />
+      <button type="button" data-action="save" style="background:var(--soft-info);color:var(--navy-700);border-color:var(--line-strong)" title="保存">保存</button>
+      <button type="button" data-action="delete" style="background:#fef2f2;color:var(--bad);border-color:#fecaca" title="削除">削除</button>
+    </div>
+  `).join("");
+
+  list.querySelectorAll(".staff-mgr-row").forEach(row => {
+    const id = row.dataset.id;
+    const input = row.querySelector("[data-staff-name]");
+    const saveBtn = row.querySelector('[data-action="save"]');
+    const delBtn = row.querySelector('[data-action="delete"]');
+
+    saveBtn.addEventListener("click", () => {
+      const newName = input.value.trim();
+      if (!newName) { toast("名前を入力してください"); return; }
+      const ok = updateStaff(id, newName);
+      if (ok) {
+        toast("保存しました");
+        renderStaffManagerList();
+      } else {
+        toast("同じ名前のスタッフが既にいます");
+      }
+    });
+
+    delBtn.addEventListener("click", () => {
+      if (window.confirm(`「${input.value}」を削除しますか？\n（過去の記録の名前は変わりません）`)) {
+        removeStaff(id);
+        toast("削除しました");
+        renderStaffManagerList();
+      }
+    });
+  });
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -1803,13 +2495,21 @@ async function flushSyncQueue() {
       } else if (item.action === "delete") {
         body.adminToken = GAS_ADMIN_TOKEN;
         body.id = item.payload.id;
+      } else if (item.action === "staff_add") {
+        body.staff = item.payload;
+      } else if (item.action === "staff_update") {
+        body.adminToken = GAS_ADMIN_TOKEN;
+        body.staff = item.payload;
+      } else if (item.action === "staff_delete") {
+        body.adminToken = GAS_ADMIN_TOKEN;
+        body.id = item.payload.id;
       }
       await postToGas(body);
       flushed++;
     } catch (err) {
       // not_found は「すでに削除されている」ので成功扱いにしてキューから除外
       const msg = String(err.message || err);
-      if (item.action === "delete" && msg.includes("not_found")) {
+      if ((item.action === "delete" || item.action === "staff_delete") && msg.includes("not_found")) {
         flushed++;
         continue;
       }
@@ -2054,6 +2754,11 @@ function setupRoleManagement() {
     flushSyncQueue().then(updateSyncBadge);
   }
   updateSyncBadge();
+
+  // 起動時にスタッフ名簿をプル（誰でも実行可能）
+  if (isOnline()) {
+    pullStaffFromGas().catch(err => console.warn("staff pull on startup failed:", err));
+  }
 }
 
 function setupSyncButton() {
@@ -2073,13 +2778,26 @@ function setupSyncButton() {
       const flushResult = await flushSyncQueue();
       // 次にリモートからプル
       const pullResult = await pullFromGas();
+      // スタッフ名簿もプル
+      let staffPull = null;
+      try {
+        staffPull = await pullStaffFromGas();
+        // staff-select の候補を更新（開いているプルダウンがあれば再描画）
+        $$(".staff-select[data-open=\"true\"]").forEach(c => {
+          const search = c.querySelector("[data-staff-search]");
+          if (search) search.dispatchEvent(new Event("input"));
+        });
+      } catch (e) {
+        console.warn("staff pull failed:", e);
+      }
       updateSyncBadge();
       $("#lastSyncLabel").textContent = "最終同期: " + formatLastSync();
       renderHistory();
       renderStats();
       let msg = `同期完了`;
       if (flushResult.flushed > 0) msg += ` (送信 ${flushResult.flushed}件)`;
-      if (pullResult.count !== undefined) msg += ` / 全${pullResult.count}件`;
+      if (pullResult.count !== undefined) msg += ` / 記録${pullResult.count}件`;
+      if (staffPull && staffPull.count !== undefined) msg += ` / スタッフ${staffPull.count}人`;
       toast(msg);
     } catch (err) {
       console.error("manual sync failed:", err);
@@ -2109,23 +2827,41 @@ function updateAdminPinDots(v) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  記録者名の補完候補（datalist 更新）
+//  過去レコードに登場した名前をスタッフ名簿に取り込む
+//  （既存データの救済 + 新規追加されたスタッフの統合）
 // ════════════════════════════════════════════════════════════════
 function refreshReporterList() {
-  const dl = $("#reporterList");
-  if (!dl) return;
   const all = loadAll();
-  const names = new Set();
+  const existingStaff = loadStaff();
+  const existingNorms = new Set(existingStaff.map(s => normalizeStaffName(s.name)));
+  let added = 0;
+
   all.forEach(r => {
     const reporter = (r.reporter || "").trim();
-    if (reporter) names.add(reporter);
+    if (reporter && !existingNorms.has(normalizeStaffName(reporter))) {
+      addStaff(reporter);
+      existingNorms.add(normalizeStaffName(reporter));
+      added++;
+    }
     getGoodJobs(r).forEach(g => {
       const t = (g.target || "").trim();
-      if (t) names.add(t);
+      if (t && !existingNorms.has(normalizeStaffName(t))) {
+        addStaff(t);
+        existingNorms.add(normalizeStaffName(t));
+        added++;
+      }
     });
   });
-  const sorted = [...names].sort((a,b) => a.localeCompare(b, "ja"));
-  dl.innerHTML = sorted.map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
+
+  // 互換: もし datalist が画面に存在すれば（旧UI併用時）更新
+  const dl = $("#reporterList");
+  if (dl) {
+    const sorted = [...existingNorms]
+      .map(norm => existingStaff.find(s => normalizeStaffName(s.name) === norm)?.name || "")
+      .filter(Boolean)
+      .sort((a, b) => a.localeCompare(b, "ja"));
+    dl.innerHTML = sorted.map(n => `<option value="${escapeHtml(n)}"></option>`).join("");
+  }
 }
 
 const loadReadIds = () => {
@@ -2560,6 +3296,15 @@ function resetForm() {
   $("#f_nurses").value = 0;
   $("#f_doctors").value = 0;
   $("#f_reporter").value = "";
+  // staff-select コンポーネントの表示もリセット
+  const reporterSelect = $('.staff-select[data-staff-select="reporter"]');
+  if (reporterSelect) {
+    const label = reporterSelect.querySelector("[data-staff-label]");
+    if (label) {
+      label.textContent = "名前を選択...";
+      label.classList.add("staff-select-placeholder");
+    }
+  }
   $("#f_short_min").value = 0;
   $("#f_short_people").value = 1;
   $("#f_no_help_reason").value = "";
@@ -2605,6 +3350,20 @@ function loadRecordToForm(rec) {
   $("#f_nurses").value = (rec.team && rec.team.nurses) || 0;
   $("#f_doctors").value = (rec.team && rec.team.doctors) || 0;
   $("#f_reporter").value = rec.reporter || "";
+  // staff-select コンポーネントの表示も同期
+  const reporterSelect = $('.staff-select[data-staff-select="reporter"]');
+  if (reporterSelect) {
+    const label = reporterSelect.querySelector("[data-staff-label]");
+    if (label) {
+      if (rec.reporter) {
+        label.textContent = rec.reporter;
+        label.classList.remove("staff-select-placeholder");
+      } else {
+        label.textContent = "名前を選択...";
+        label.classList.add("staff-select-placeholder");
+      }
+    }
+  }
 
   if (rec.shift) selectSeg("shift", rec.shift);
 
