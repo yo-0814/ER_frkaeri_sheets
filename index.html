@@ -2,8 +2,26 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
 <title>浦添ER 振り返り共有シート</title>
+
+<!-- ===== PWA 設定 ===== -->
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#12284d" />
+<meta name="description" content="救急外来の振り返りを記録・共有するアプリ" />
+
+<!-- iOS Safari PWA 対応 -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="浦添ER" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="format-detection" content="telephone=no" />
+
+<!-- アイコン -->
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+<link rel="apple-touch-icon" sizes="180x180" href="icon-apple-180.png" />
+<link rel="apple-touch-icon" sizes="192x192" href="icon-192.png" />
+
 <!-- Tailwind CDN: 本番用警告を抑制（プロトタイプ用途） -->
 <script>
   // Tailwindの本番警告を無効化
@@ -37,6 +55,20 @@
     --soft-info: #eef4fb;
     --soft-alert: #fef2f2;
   }
+  /* PWAのセーフエリア対応（iOS のノッチ・ホームバー対応） */
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  /* PWAスタンドアロン時のステータスバー領域の背景 */
+  @media all and (display-mode: standalone) {
+    html {
+      background: #12284d;
+    }
+  }
+
   /* Tailwind CDN ブロック時のフォールバック */
   .hidden { display: none !important; }
   html, body {
@@ -3591,6 +3623,30 @@ async function doPurgeAll() {
       toast(`ローカルの${total}件を削除（オフラインのためクラウドは未処理）`);
     }
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+//  Service Worker 登録（PWA: オフライン対応）
+// ════════════════════════════════════════════════════════════════
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").then(
+      (reg) => {
+        // 更新検知
+        reg.addEventListener("updatefound", () => {
+          const newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener("statechange", () => {
+            if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+              // 新しい SW がインストールされた → 次回起動時に有効化される
+              console.info("新しいバージョンがあります。次回起動時に反映されます。");
+            }
+          });
+        });
+      },
+      (err) => console.warn("Service Worker 登録失敗:", err)
+    );
+  });
 }
 
 // ════════════════════════════════════════════════════════════════
