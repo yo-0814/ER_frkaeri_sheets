@@ -3158,8 +3158,7 @@ function setupTabs() {
   $$(".tab-btn").forEach(b => {
     b.addEventListener("click", () => {
       const target = b.dataset.tab;
-      // 入力専用モードでは入力タブ以外への切替を無効化
-      if (getRole() === "input" && target !== "input") return;
+      // 入力専用モードでも履歴・統計タブを開けるようにする（閲覧のみ）
       $$(".tab-btn").forEach(x => x.dataset.active = (x === b ? "true" : "false"));
       $("#tab-input").classList.toggle("hidden", target !== "input");
       $("#tab-history").classList.toggle("hidden", target !== "history");
