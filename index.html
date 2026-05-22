@@ -1205,7 +1205,7 @@
       <button type="button" class="filter-toggle" data-ranking-toggle>
         <span class="filter-toggle-left">
           <svg viewBox="0 0 24 24" width="16" height="16" class="ico" style="color:var(--good)"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-          <span class="text-[13px] font-semibold text-[var(--navy-700)]">Good Job 年間ランキング</span>
+          <span class="text-[13px] font-semibold text-[var(--navy-700)]">Good Job 月間ランキング</span>
           <span class="filter-count-badge hidden" id="rankingCount" style="background:var(--good)">0</span>
         </span>
         <svg viewBox="0 0 24 24" width="18" height="18" class="ico filter-toggle-chevron"><polyline points="6 9 12 15 18 9"/></svg>
@@ -1468,7 +1468,7 @@
 
     <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
       <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" id="postCloseBtn">閉じる</button>
-      <button class="p-4 text-[var(--navy-800)] font-bold" id="postNewBtn">新規入力</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="postNewBtn">履歴を見る</button>
     </div>
   </div>
 </div>
@@ -3109,6 +3109,62 @@ function selectSeg(field, val) {
   });
   formState[field] = val;
   handleConditionals(field, val);
+  // 評価が揃ったら早期プリフェッチを試みる
+  scheduleEarlyPrefetch();
+}
+
+// 必須の評価項目が全部揃ってるかチェック
+function isFormReadyForPrefetch() {
+  return !!(
+    formState.shift &&
+    formState.break_secured &&
+    formState.team_collab &&
+    formState.external_collab &&
+    formState.psych_safety &&
+    formState.hospitality &&
+    formState.wait_care &&
+    formState.anxiety_relief &&
+    formState.case_exists
+  );
+}
+
+// 入力途中の早期プリフェッチをスケジュール
+// - 必須評価項目が全部揃っている時のみ発動
+// - 3秒間入力が止まったらプリフェッチ実行（デバウンス）
+// - 1回の振り返り入力で最大3回まで
+function scheduleEarlyPrefetch() {
+  // 既存のタイマーがあればキャンセル（入力が続いてる間は発動しない）
+  if (earlyPrefetchTimer) {
+    clearTimeout(earlyPrefetchTimer);
+    earlyPrefetchTimer = null;
+  }
+  // 必須項目が揃ってなければ何もしない
+  if (!isFormReadyForPrefetch()) return;
+  // 上限チェック
+  if (earlyPrefetchCount >= EARLY_PREFETCH_MAX) return;
+  // GAS未設定なら何もしない
+  if (!GAS_URL || GAS_URL.startsWith("PLACEHOLDER")) return;
+
+  earlyPrefetchTimer = setTimeout(() => {
+    earlyPrefetchTimer = null;
+    try {
+      const previewRec = buildRecord();
+      prefetchEncouragement(previewRec);
+      earlyPrefetchCount++;
+      console.info(`早期プリフェッチ実行 (${earlyPrefetchCount}/${EARLY_PREFETCH_MAX})`);
+    } catch (e) {
+      console.warn("早期プリフェッチ失敗:", e);
+    }
+  }, EARLY_PREFETCH_DELAY);
+}
+
+// プリフェッチカウンタをリセット（保存完了時/新規入力時）
+function resetEarlyPrefetchCounter() {
+  earlyPrefetchCount = 0;
+  if (earlyPrefetchTimer) {
+    clearTimeout(earlyPrefetchTimer);
+    earlyPrefetchTimer = null;
+  }
 }
 
 function setupSegmented() {
@@ -3308,10 +3364,14 @@ function setupSaveFlow() {
     openModal("confirmModal");
 
     // プリフェッチ: 確認モーダル表示中に裏でねぎらいメッセージを生成開始
-    // ユーザーが確認ボタンを押すまでの数秒を有効活用する
+    // 既に早期プリフェッチが完了/進行中ならそのまま使う（重複API呼び出し防止）
     try {
-      const previewRec = buildRecord();
-      prefetchEncouragement(previewRec);
+      if (encouragePrefetch && encouragePrefetch.promise) {
+        console.info("既存のプリフェッチを再利用");
+      } else {
+        const previewRec = buildRecord();
+        prefetchEncouragement(previewRec);
+      }
     } catch (e) {
       console.warn("prefetch skip:", e);
     }
@@ -3374,13 +3434,17 @@ function setupSaveFlow() {
 
   $("#postCloseBtn").addEventListener("click", () => {
     closeModal("postSaveModal");
+    resetForm();
     refreshNotificationBadge();
+    window.scrollTo({ top: 0, behavior: "smooth" });
   });
   $("#postNewBtn").addEventListener("click", () => {
     closeModal("postSaveModal");
     resetForm();
     refreshNotificationBadge();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // 履歴タブへ切り替え
+    const histBtn = $('.tab-btn[data-tab="history"]');
+    if (histBtn) histBtn.click();
   });
 
   $("#cancelEditBtn").addEventListener("click", cancelEdit);
@@ -3409,6 +3473,11 @@ function askDeleteRecord(id) {
 
 // プリフェッチ状態
 let encouragePrefetch = null; // { promise, result, recordSnapshot }
+// 早期プリフェッチ管理
+let earlyPrefetchTimer = null;   // デバウンス用タイマー
+let earlyPrefetchCount = 0;       // 自動プリフェッチの発動回数（上限制御）
+const EARLY_PREFETCH_MAX = 3;     // 1回の振り返り入力で自動プリフェッチする最大回数
+const EARLY_PREFETCH_DELAY = 3000; // 入力が止まってからプリフェッチ発動までの待ち時間(ms)
 
 // 個人情報を示す可能性のあるパターン
 const PII_PATTERNS = [
@@ -3722,6 +3791,8 @@ function resetForm() {
     team_collab: null, external_collab: null, psych_safety: null,
     hospitality: null, wait_care: null, anxiety_relief: null,
   };
+  // 早期プリフェッチのカウンタもリセット
+  resetEarlyPrefetchCounter();
   $("#f_date").value = todayIso();
   $("#f_nurses").value = 0;
   $("#f_doctors").value = 0;
@@ -3969,10 +4040,10 @@ function ratingDot(r) {
 }
 
 // ════════════════════════════════════════════════════════════════
-//  Good Job 年間ランキング（履歴タブの上部に表示）
+//  Good Job 月間ランキング（履歴タブの上部に表示）
 // ════════════════════════════════════════════════════════════════
-// 当年（1月1日 00:00 〜 12月31日 23:59:59）の good job を通年で集計。
-// 年が変わるタイミングで自動的にリセットされる（前年以前のデータはランキング対象外）。
+// 現在の月（その月の1日 00:00 〜 月末 23:59:59）の good job のみを集計。
+// 月初に自動的にリセットされる（前月以前のデータはランキング対象外）。
 // 履歴タブの期間フィルター（過去7日/30日/90日/全期間）からは独立。
 function renderRanking(allRecords) {
   const panel = $("#rankingPanel");
@@ -3981,16 +4052,16 @@ function renderRanking(allRecords) {
   if (!panel || !body) return;
 
   const now = new Date();
-  const yearStart = new Date(now.getFullYear(), 0, 1, 0, 0, 0, 0).getTime();
-  const yearEnd = new Date(now.getFullYear() + 1, 0, 1, 0, 0, 0, 0).getTime();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0).getTime();
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1, 0, 0, 0, 0).getTime();
 
-  const yearRecords = allRecords.filter(r => {
+  const monthRecords = allRecords.filter(r => {
     const ts = r.saved_at_ms || 0;
-    return ts >= yearStart && ts < yearEnd;
+    return ts >= monthStart && ts < monthEnd;
   });
 
   const tally = new Map();
-  yearRecords.forEach(r => {
+  monthRecords.forEach(r => {
     getGoodJobs(r).forEach(g => {
       const target = (g.target || "").trim();
       if (!target) return;
@@ -4017,19 +4088,19 @@ function renderRanking(allRecords) {
     countBadge.classList.add("hidden");
   }
 
-  const yearLabel = `${now.getFullYear()}年 年間ランキング`;
+  const monthLabel = `${now.getFullYear()}年${now.getMonth() + 1}月`;
 
-  const lastDayOfYear = new Date(now.getFullYear(), 11, 31);
-  const daysLeft = Math.round((lastDayOfYear.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 86400000);
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = lastDay - now.getDate();
   const resetHint = daysLeft === 0
-    ? "本日が年末です（明日リセット）"
-    : `年末まで残り ${daysLeft} 日`;
+    ? "本日が月末です（明日リセット）"
+    : `月末まで残り ${daysLeft} 日`;
 
   if (ranking.length === 0) {
     body.innerHTML = `
       <div class="text-center py-6">
-        <div class="text-[12px] font-bold text-[var(--navy-700)] mb-1">${yearLabel}</div>
-        <div class="text-[11px] text-[var(--muted)]">今年のgood jobの記録はまだありません</div>
+        <div class="text-[12px] font-bold text-[var(--navy-700)] mb-1">${monthLabel}</div>
+        <div class="text-[11px] text-[var(--muted)]">今月のgood jobの記録はまだありません</div>
         <div class="text-[10px] text-[var(--muted)] mt-2">${resetHint}</div>
       </div>`;
     return;
@@ -4096,7 +4167,7 @@ function renderRanking(allRecords) {
 
   body.innerHTML = `
     <div class="flex items-center justify-between mb-2 px-1">
-      <div class="text-[12px] font-bold text-[var(--navy-700)]">${yearLabel}</div>
+      <div class="text-[12px] font-bold text-[var(--navy-700)]">${monthLabel}</div>
       <div class="text-[10px] text-[var(--muted)]">${resetHint}</div>
     </div>
     <div class="text-[11px] text-[var(--muted)] mb-2 px-1">${ranking.length > 3 ? `全${ranking.length}名（上位3名 + ${restRanking.length}名）` : `上位 ${topRanking.length}名`}</div>
