@@ -3144,12 +3144,14 @@ function refreshReporterList() {
       added++;
     }
     getGoodJobs(r).forEach(g => {
-      const t = (g.target || "").trim();
-      if (t && !existingNorms.has(normalizeStaffName(t))) {
-        addStaff(t);
-        existingNorms.add(normalizeStaffName(t));
-        added++;
-      }
+      // 複数選択（カンマ区切り）に対応：各人を個別に登録
+      parseGoodJobTargets(g.target).forEach(t => {
+        if (t && !existingNorms.has(normalizeStaffName(t))) {
+          addStaff(t);
+          existingNorms.add(normalizeStaffName(t));
+          added++;
+        }
+      });
     });
   });
 
