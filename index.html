@@ -678,6 +678,52 @@
     color: #fff;
     font-weight: 600;
   }
+  /* 複数選択モード：チェックボックス風の表示 */
+  .staff-select[data-staff-multi="true"] .staff-select-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .staff-select[data-staff-multi="true"] .staff-select-option::before {
+    content: "";
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--line);
+    border-radius: 4px;
+    flex-shrink: 0;
+    background: #fff;
+    transition: all .1s;
+  }
+  .staff-select[data-staff-multi="true"] .staff-select-option[data-selected="true"] {
+    background: var(--soft-info);
+    color: var(--navy-900);
+  }
+  .staff-select[data-staff-multi="true"] .staff-select-option[data-selected="true"]::before {
+    background: var(--good);
+    border-color: var(--good);
+    content: "✓";
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  /* 複数選択モードの確定ボタン */
+  .staff-select-done {
+    padding: 11px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #fff;
+    font-weight: 700;
+    background: var(--good);
+    border: none;
+    width: 100%;
+    text-align: center;
+    flex-shrink: 0;
+    transition: opacity .1s;
+  }
+  .staff-select-done:active { opacity: .8; }
   .staff-select-empty {
     padding: 16px;
     text-align: center;
@@ -875,11 +921,10 @@
           </div>
         </div>
         <div>
-          <label class="lbl lbl-required">医師（人）</label>
-          <div class="stepper">
-            <button type="button" data-stp="f_doctors" data-delta="-1">−</button>
-            <input type="number" id="f_doctors" min="0" value="0" />
-            <button type="button" data-stp="f_doctors" data-delta="1">+</button>
+          <label class="lbl lbl-required">時差</label>
+          <div class="seg seg-2" data-seg-field="shift_diff">
+            <button class="seg-btn" data-val="あり">あり</button>
+            <button class="seg-btn" data-val="なし">なし</button>
           </div>
         </div>
         <div class="col-span-2">
@@ -968,7 +1013,7 @@
             <button class="seg-btn" data-val="普通">普通</button>
             <button class="seg-btn" data-val="悪い">悪い</button>
           </div>
-          <textarea class="fld mt-2" data-note="team_collab_note" placeholder="具体的な場面（任意）"></textarea>
+          <textarea class="fld mt-2" data-note="team_collab_note" placeholder="具体的な場面"></textarea>
         </div>
         <div data-rate-group="external_collab">
           <label class="lbl">② 他関連機関との連携(他部署、他施設、消防など）</label>
@@ -977,7 +1022,7 @@
             <button class="seg-btn" data-val="普通">普通</button>
             <button class="seg-btn" data-val="悪い">悪い</button>
           </div>
-          <textarea class="fld mt-2" data-note="external_collab_note" placeholder="具体的な場面（任意）"></textarea>
+          <textarea class="fld mt-2" data-note="external_collab_note" placeholder="具体的な場面"></textarea>
         </div>
         <div data-rate-group="psych_safety">
           <label class="lbl">③ 心理的安全性について</label>
@@ -986,7 +1031,7 @@
             <button class="seg-btn" data-val="普通">普通</button>
             <button class="seg-btn" data-val="悪い">悪い</button>
           </div>
-          <textarea class="fld mt-2" data-note="psych_safety_note" placeholder="具体的な場面（任意）"></textarea>
+          <textarea class="fld mt-2" data-note="psych_safety_note" placeholder="具体的な場面"></textarea>
         </div>
       </div>
     </div>
@@ -1128,10 +1173,10 @@
       <div class="filter-row">
         <label class="lbl">期間</label>
         <div class="chip-group" id="histFilter" data-filter-kind="hist" data-filter-key="days" data-mode="single">
-          <button class="chip" data-days="7" data-active="true">過去7日</button>
+          <button class="chip" data-days="7">過去7日</button>
           <button class="chip" data-days="30">30日</button>
           <button class="chip" data-days="90">90日</button>
-          <button class="chip" data-days="0">全期間</button>
+          <button class="chip" data-days="0" data-active="true">全期間</button>
         </div>
       </div>
 
@@ -1140,6 +1185,14 @@
         <div class="chip-group" data-filter-kind="hist" data-filter-key="shift" data-mode="multi">
           <button class="chip" data-val="日勤">日勤</button>
           <button class="chip" data-val="夜勤">夜勤</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">時差</label>
+        <div class="chip-group" data-filter-kind="hist" data-filter-key="shift_diff" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
         </div>
       </div>
 
@@ -1200,8 +1253,8 @@
       </div>
     </div>
 
-    <!-- Good Jobランキング（折りたたみ式・期間フィルターと連動） -->
-    <div id="rankingPanel" class="card p-4 filter-panel" data-open="false">
+    <!-- Good Jobランキング（上位3人は常時表示・4位以降は折りたたみ） -->
+    <div id="rankingPanel" class="card p-4 filter-panel" data-open="true">
       <button type="button" class="filter-toggle" data-ranking-toggle>
         <span class="filter-toggle-left">
           <svg viewBox="0 0 24 24" width="16" height="16" class="ico" style="color:var(--good)"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
@@ -1232,10 +1285,10 @@
       <div class="filter-row">
         <label class="lbl">期間</label>
         <div class="chip-group" id="statsFilter" data-filter-kind="stats" data-filter-key="days" data-mode="single">
-          <button class="chip" data-days="7" data-active="true">過去7日</button>
+          <button class="chip" data-days="7">過去7日</button>
           <button class="chip" data-days="30">30日</button>
           <button class="chip" data-days="90">90日</button>
-          <button class="chip" data-days="0">全期間</button>
+          <button class="chip" data-days="0" data-active="true">全期間</button>
         </div>
       </div>
 
@@ -1244,6 +1297,14 @@
         <div class="chip-group" data-filter-kind="stats" data-filter-key="shift" data-mode="multi">
           <button class="chip" data-val="日勤">日勤</button>
           <button class="chip" data-val="夜勤">夜勤</button>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <label class="lbl">時差</label>
+        <div class="chip-group" data-filter-kind="stats" data-filter-key="shift_diff" data-mode="multi">
+          <button class="chip" data-val="あり">あり</button>
+          <button class="chip" data-val="なし">なし</button>
         </div>
       </div>
 
@@ -1653,7 +1714,8 @@
      id, date, saved_time, saved_at_ms,
      created_at_ms?, updated_at_ms?,
      shift: "日勤" | "夜勤",
-     team: { nurses, doctors },
+     shift_diff: "あり" | "なし",
+     team: { nurses },
      reporter,
      workload: { break_secured, short_min, short_people, help_requested, no_help_reason },
      team_state: { team_collab, team_collab_note, external_collab, ..., psych_safety_note },
@@ -1707,6 +1769,7 @@ const GAS_ADMIN_TOKEN = "4d6f9g2h5j8k1m4n7p3q6r9s2t5u8v1w";
 // ════════════════════════════════════════════════════════════════
 let formState = {
   shift: null,
+  shift_diff: null,
   break_secured: null,
   help_requested: null,
   case_exists: null,
@@ -1778,6 +1841,13 @@ function getGoodJobs(rec) {
   return [];
 }
 
+// good job の対象者をカンマ区切り文字列 → 名前の配列に変換
+// （複数選択対応。後方互換：単一名もそのまま1要素の配列になる）
+function parseGoodJobTargets(target) {
+  if (!target) return [];
+  return String(target).split(",").map(s => s.trim()).filter(Boolean);
+}
+
 function debounce(fn, wait) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
@@ -1835,8 +1905,8 @@ function addGoodJob(initial) {
     </div>
     <div class="space-y-2">
       <div>
-        <label class="lbl">対象者</label>
-        <div class="staff-select" data-staff-select="goodjob">
+        <label class="lbl">対象者（複数選択可）</label>
+        <div class="staff-select" data-staff-select="goodjob" data-staff-multi="true">
           <button type="button" class="staff-select-trigger" data-staff-trigger>
             <span class="staff-select-placeholder" data-staff-label>名前を選択...</span>
           </button>
@@ -2197,6 +2267,8 @@ function initStaffSelect(container) {
   if (!container || container.dataset.initialized === "true") return;
   container.dataset.initialized = "true";
 
+  const isMulti = container.dataset.staffMulti === "true";
+
   const trigger = container.querySelector("[data-staff-trigger]");
   const label = container.querySelector("[data-staff-label]");
   const dropdown = container.querySelector(".staff-select-dropdown");
@@ -2210,35 +2282,69 @@ function initStaffSelect(container) {
     if (container.dataset.staffSelect === "reporter") {
       return $("#f_reporter");
     } else if (container.dataset.staffSelect === "goodjob") {
-      // 同じ親要素配下のhidden inputを探す
       const wrap = container.closest("[data-good-job]");
       return wrap ? wrap.querySelector("[data-goodjob-target]") : null;
     }
     return null;
   };
 
+  // 複数選択モード：カンマ区切り文字列 ⇔ 配列の相互変換
+  function getSelectedNames() {
+    const hidden = getHiddenInput();
+    if (!hidden || !hidden.value) return [];
+    return hidden.value.split(",").map(s => s.trim()).filter(Boolean);
+  }
+
   // 表示更新
-  function updateLabel(name) {
-    if (name) {
-      label.textContent = name;
-      label.classList.remove("staff-select-placeholder");
+  function updateLabel(value) {
+    if (isMulti) {
+      const names = (value || "").split(",").map(s => s.trim()).filter(Boolean);
+      if (names.length === 0) {
+        label.textContent = "名前を選択...";
+        label.classList.add("staff-select-placeholder");
+      } else if (names.length === 1) {
+        label.textContent = names[0];
+        label.classList.remove("staff-select-placeholder");
+      } else {
+        label.textContent = `${names.join("、")}（${names.length}名）`;
+        label.classList.remove("staff-select-placeholder");
+      }
     } else {
-      label.textContent = "名前を選択...";
-      label.classList.add("staff-select-placeholder");
+      if (value) {
+        label.textContent = value;
+        label.classList.remove("staff-select-placeholder");
+      } else {
+        label.textContent = "名前を選択...";
+        label.classList.add("staff-select-placeholder");
+      }
     }
   }
 
-  // hidden inputの値を取って表示に反映
   function syncFromHidden() {
     const hidden = getHiddenInput();
     if (hidden) updateLabel(hidden.value);
   }
 
-  // 値を設定
+  // 単一選択：値を設定
   function setValue(name) {
     const hidden = getHiddenInput();
     if (hidden) hidden.value = name || "";
     updateLabel(name);
+  }
+
+  // 複数選択：名前をトグル
+  function toggleValue(name) {
+    const hidden = getHiddenInput();
+    if (!hidden) return;
+    let names = getSelectedNames();
+    const idx = names.indexOf(name);
+    if (idx >= 0) {
+      names.splice(idx, 1); // 既選択 → 解除
+    } else {
+      names.push(name);      // 未選択 → 追加
+    }
+    hidden.value = names.join(",");
+    updateLabel(hidden.value);
   }
 
   // 候補リストを描画
@@ -2248,8 +2354,6 @@ function initStaffSelect(container) {
     const filtered = q
       ? staff.filter(s => s.name.toLowerCase().includes(q))
       : staff;
-    const hidden = getHiddenInput();
-    const currentValue = hidden ? hidden.value : "";
 
     if (filtered.length === 0) {
       if (staff.length === 0) {
@@ -2260,18 +2364,35 @@ function initStaffSelect(container) {
       return;
     }
 
-    list.innerHTML = filtered.map(s => {
-      const isSelected = s.name === currentValue;
-      return `<div class="staff-select-option" data-name="${escapeHtml(s.name)}" data-selected="${isSelected}">${escapeHtml(s.name)}</div>`;
-    }).join("");
-
-    // クリックハンドラ
-    list.querySelectorAll(".staff-select-option").forEach(opt => {
-      opt.addEventListener("click", () => {
-        setValue(opt.dataset.name);
-        close();
+    if (isMulti) {
+      const selectedNames = getSelectedNames();
+      list.innerHTML = filtered.map(s => {
+        const isSel = selectedNames.indexOf(s.name) >= 0;
+        return `<div class="staff-select-option" data-name="${escapeHtml(s.name)}" data-selected="${isSel}">${escapeHtml(s.name)}</div>`;
+      }).join("");
+      // クリックでトグル（閉じない、リストだけ再描画）
+      list.querySelectorAll(".staff-select-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          toggleValue(opt.dataset.name);
+          // 選択状態だけ更新（検索文字は保持）
+          const nowSelected = getSelectedNames().indexOf(opt.dataset.name) >= 0;
+          opt.dataset.selected = String(nowSelected);
+        });
       });
-    });
+    } else {
+      const hidden = getHiddenInput();
+      const currentValue = hidden ? hidden.value : "";
+      list.innerHTML = filtered.map(s => {
+        const isSelected = s.name === currentValue;
+        return `<div class="staff-select-option" data-name="${escapeHtml(s.name)}" data-selected="${isSelected}">${escapeHtml(s.name)}</div>`;
+      }).join("");
+      list.querySelectorAll(".staff-select-option").forEach(opt => {
+        opt.addEventListener("click", () => {
+          setValue(opt.dataset.name);
+          close();
+        });
+      });
+    }
   }
 
   function open() {
@@ -2290,7 +2411,6 @@ function initStaffSelect(container) {
     e.stopPropagation();
     if (container.dataset.open === "true") close();
     else {
-      // 他の開いているセレクトを閉じる
       $$(".staff-select[data-open=\"true\"]").forEach(c => c.dataset.open = "false");
       open();
     }
@@ -2301,14 +2421,22 @@ function initStaffSelect(container) {
     if (e.key === "Escape") close();
     else if (e.key === "Enter") {
       e.preventDefault();
-      // 1件だけにフィルタされていればそれを選択、無ければ追加候補
       const opts = list.querySelectorAll(".staff-select-option");
-      if (opts.length === 1) {
-        setValue(opts[0].dataset.name);
-        close();
-      } else if (opts.length === 0 && searchInput.value.trim()) {
-        // 入力中の名前で新規追加
-        handleAdd(searchInput.value.trim());
+      if (isMulti) {
+        // 複数モード：1件に絞れてればトグル、0件なら新規追加
+        if (opts.length === 1) {
+          toggleValue(opts[0].dataset.name);
+          renderList(searchInput.value);
+        } else if (opts.length === 0 && searchInput.value.trim()) {
+          handleAdd(searchInput.value.trim());
+        }
+      } else {
+        if (opts.length === 1) {
+          setValue(opts[0].dataset.name);
+          close();
+        } else if (opts.length === 0 && searchInput.value.trim()) {
+          handleAdd(searchInput.value.trim());
+        }
       }
     }
   });
@@ -2318,9 +2446,19 @@ function initStaffSelect(container) {
     handleAdd(name);
   });
 
+  // 複数選択モードのみ「選択完了」ボタンを追加
+  if (isMulti) {
+    const doneBtn = document.createElement("button");
+    doneBtn.type = "button";
+    doneBtn.className = "staff-select-done";
+    doneBtn.textContent = "選択完了";
+    doneBtn.addEventListener("click", () => close());
+    dropdown.appendChild(doneBtn);
+  }
+
   function handleAdd(initialName) {
     const promptedName = window.prompt("追加するスタッフ名を入力してください", initialName || "");
-    if (promptedName === null) return; // キャンセル
+    if (promptedName === null) return;
     const trimmed = promptedName.trim();
     if (!trimmed) {
       toast("名前を入力してください");
@@ -2328,10 +2466,23 @@ function initStaffSelect(container) {
     }
     const result = addStaff(trimmed);
     if (result) {
-      setValue(result.name);
-      close();
-      toast(`「${result.name}」を追加しました`);
-      // 全選択UIを更新（他のセレクトの候補にも反映）
+      if (isMulti) {
+        // 追加した人を選択状態に加える
+        const hidden = getHiddenInput();
+        if (hidden) {
+          let names = getSelectedNames();
+          if (names.indexOf(result.name) < 0) names.push(result.name);
+          hidden.value = names.join(",");
+          updateLabel(hidden.value);
+        }
+        searchInput.value = "";
+        renderList();
+        toast(`「${result.name}」を追加しました`);
+      } else {
+        setValue(result.name);
+        close();
+        toast(`「${result.name}」を追加しました`);
+      }
       refreshAllStaffSelects();
     }
   }
@@ -3117,6 +3268,7 @@ function selectSeg(field, val) {
 function isFormReadyForPrefetch() {
   return !!(
     formState.shift &&
+    formState.shift_diff &&
     formState.break_secured &&
     formState.team_collab &&
     formState.external_collab &&
@@ -3348,6 +3500,7 @@ function setupSaveFlow() {
     const missing = [];
     if (!$("#f_date").value) missing.push("日付");
     if (!formState.shift) missing.push("勤務帯");
+    if (!formState.shift_diff) missing.push("時差");
     if (!$("#f_reporter").value.trim()) missing.push("記録者名");
     if (!formState.break_secured) missing.push("休憩の確保");
     if (!formState.team_collab) missing.push("チーム連携");
@@ -3551,8 +3704,8 @@ function detectEncourageMode(rec) {
 function buildBaseContext(rec) {
   return {
     shift: rec.shift || "",
+    shift_diff: rec.shift_diff || "",
     nurses: (rec.team && rec.team.nurses) || 0,
-    doctors: (rec.team && rec.team.doctors) || 0,
     workload: {
       break_secured: (rec.workload && rec.workload.break_secured) || "",
       short_min: (rec.workload && rec.workload.short_min) || 0,
@@ -3589,7 +3742,7 @@ function buildDetailContext(rec) {
     share: rec.share || "",
   };
   base.good_jobs = (rec.good_jobs || []).map(g => ({
-    target: g.target || "",
+    target: parseGoodJobTargets(g.target).join("、"),
     comment: g.comment || "",
   }));
   base.cases = ((rec.case && rec.case.items) || []).map(c => ({
@@ -3750,9 +3903,9 @@ function buildRecord() {
     saved_time: nowTime(),
     saved_at_ms: Date.now(),
     shift: formState.shift,
+    shift_diff: formState.shift_diff,
     team: {
       nurses: parseInt($("#f_nurses").value || "0", 10),
-      doctors: parseInt($("#f_doctors").value || "0", 10),
     },
     reporter: $("#f_reporter").value.trim(),
     workload: {
@@ -3787,7 +3940,7 @@ function buildRecord() {
 
 function resetForm() {
   formState = {
-    shift: null, break_secured: null, help_requested: null, case_exists: null,
+    shift: null, shift_diff: null, break_secured: null, help_requested: null, case_exists: null,
     team_collab: null, external_collab: null, psych_safety: null,
     hospitality: null, wait_care: null, anxiety_relief: null,
   };
@@ -3795,7 +3948,6 @@ function resetForm() {
   resetEarlyPrefetchCounter();
   $("#f_date").value = todayIso();
   $("#f_nurses").value = 0;
-  $("#f_doctors").value = 0;
   $("#f_reporter").value = "";
   // staff-select コンポーネントの表示もリセット
   const reporterSelect = $('.staff-select[data-staff-select="reporter"]');
@@ -3849,7 +4001,6 @@ function loadRecordToForm(rec) {
 
   $("#f_date").value = rec.date || todayIso();
   $("#f_nurses").value = (rec.team && rec.team.nurses) || 0;
-  $("#f_doctors").value = (rec.team && rec.team.doctors) || 0;
   $("#f_reporter").value = rec.reporter || "";
   // staff-select コンポーネントの表示も同期
   const reporterSelect = $('.staff-select[data-staff-select="reporter"]');
@@ -3867,6 +4018,7 @@ function loadRecordToForm(rec) {
   }
 
   if (rec.shift) selectSeg("shift", rec.shift);
+  if (rec.shift_diff) selectSeg("shift_diff", rec.shift_diff);
 
   if (rec.workload && rec.workload.break_secured) {
     selectSeg("break_secured", rec.workload.break_secured);
@@ -3976,6 +4128,7 @@ function applyFilters(records, f) {
   const has = arr => Array.isArray(arr) && arr.length > 0;
   return records.filter(r => {
     if (has(f.shift) && !f.shift.includes(r.shift)) return false;
+    if (has(f.shift_diff) && !f.shift_diff.includes(r.shift_diff)) return false;
     if (has(f.break_secured) && !f.break_secured.includes(r.workload.break_secured)) return false;
     if (has(f.team_state)) {
       const vals = [r.team_state.team_collab, r.team_state.external_collab, r.team_state.psych_safety];
@@ -4021,6 +4174,7 @@ function readFilters(kind) {
   const searchEl = kind === "hist" ? $("#histFreeSearch") : $("#statsFreeSearch");
   return {
     shift: getSelectedChipValues(kind, "shift"),
+    shift_diff: getSelectedChipValues(kind, "shift_diff"),
     break_secured: getSelectedChipValues(kind, "break_secured"),
     team_state: getSelectedChipValues(kind, "team_state"),
     patient_care: getSelectedChipValues(kind, "patient_care"),
@@ -4063,16 +4217,19 @@ function renderRanking(allRecords) {
   const tally = new Map();
   yearRecords.forEach(r => {
     getGoodJobs(r).forEach(g => {
-      const target = (g.target || "").trim();
-      if (!target) return;
-      if (!tally.has(target)) tally.set(target, { count: 0, comments: [] });
-      const entry = tally.get(target);
-      entry.count += 1;
-      entry.comments.push({
-        comment: g.comment || "",
-        date: r.date,
-        reporter: r.reporter || "",
-        saved_at_ms: r.saved_at_ms,
+      // 複数対象者（カンマ区切り）に対応：各人それぞれにカウント
+      const targets = parseGoodJobTargets(g.target);
+      if (targets.length === 0) return;
+      targets.forEach(target => {
+        if (!tally.has(target)) tally.set(target, { count: 0, comments: [] });
+        const entry = tally.get(target);
+        entry.count += 1;
+        entry.comments.push({
+          comment: g.comment || "",
+          date: r.date,
+          reporter: r.reporter || "",
+          saved_at_ms: r.saved_at_ms,
+        });
       });
     });
   });
@@ -4303,12 +4460,17 @@ function histGoodJobsBlock(r) {
     <div class="mt-3 pt-3 border-t border-[var(--line)]">
       <div class="text-[11px] font-semibold text-[var(--navy-700)] mb-2">✨ 本日の good job（${list.length}件）</div>
       <div class="space-y-1.5">
-        ${list.map(gj => `
+        ${list.map(gj => {
+          const targets = parseGoodJobTargets(gj.target);
+          const targetHtml = targets.length > 0
+            ? `<div class="text-[11px] font-bold text-[#065f46] mb-1">→ ${targets.map(t => escapeHtml(t) + " さん").join("、")}</div>`
+            : "";
+          return `
           <div class="p-2.5 rounded-lg" style="background:#ecfdf5;border-left:3px solid var(--good)">
-            ${gj.target ? `<div class="text-[11px] font-bold text-[#065f46] mb-1">→ ${escapeHtml(gj.target)} さん</div>` : ""}
+            ${targetHtml}
             ${gj.comment ? `<div class="text-[12px] text-[var(--navy-800)] leading-relaxed whitespace-pre-wrap">${escapeHtml(gj.comment)}</div>` : ""}
-          </div>
-        `).join("")}
+          </div>`;
+        }).join("")}
       </div>
     </div>`;
 }
@@ -4349,6 +4511,7 @@ function histCardHtml(r) {
         <div>
           <div class="flex items-center gap-2 mb-1 flex-wrap">
             ${histShiftBadge(r.shift)}
+            ${r.shift_diff === "あり" ? `<span class="badge" style="background:#fef9c3;color:#854d0e">⏱ 時差あり</span>` : ""}
             ${breakBad ? `<span class="badge" style="background:#fef2f2;color:#b91c1c">休憩未確保</span>` : ""}
             ${hasCase ? `<span class="badge" style="background:#eef4fb;color:#1b3a6b">📋 症例あり</span>` : ""}
           </div>
@@ -4356,8 +4519,8 @@ function histCardHtml(r) {
           <div class="text-[11px] text-[var(--muted)] num-tabular">保存 ${r.saved_time} ・ ${escapeHtml(r.reporter || "(記録者未入力)")}</div>
         </div>
         <div class="text-right">
-          <div class="text-[10px] text-[var(--muted)]">Ns / Dr</div>
-          <div class="text-[14px] font-bold num-tabular text-[var(--navy-800)]">${r.team.nurses} / ${r.team.doctors}</div>
+          <div class="text-[10px] text-[var(--muted)]">看護師</div>
+          <div class="text-[14px] font-bold num-tabular text-[var(--navy-800)]">${r.team.nurses}<span class="text-[10px] text-[var(--muted)] ml-0.5">名</span></div>
         </div>
       </div>
       ${histRatingsBlock(r)}
@@ -4899,7 +5062,7 @@ function doExport() {
     return;
   }
   const headers = [
-    "No.","日付","保存時刻","勤務帯","記録者","看護師数","医師数",
+    "No.","日付","保存時刻","勤務帯","記録者","看護師数","時差勤務",
     "休憩確保","不足時間(分)","対象人数","応援要請","応援なし理由",
     "チーム連携","チーム連携_場面","他機関連携","他機関連携_場面","心理的安全性","心理的安全性_場面",
     "接遇","待ち時間配慮","不安軽減","患者家族コメント",
@@ -4920,7 +5083,7 @@ function doExport() {
     const caseContents = caseItems.map(it => (it.content || "").replace(/\n/g, " ")).join("｜｜");
     return [
       idx + 1, r.date, r.saved_time, r.shift || "", r.reporter || "",
-      r.team.nurses, r.team.doctors,
+      r.team.nurses, r.shift_diff || "",
       r.workload.break_secured || "", r.workload.short_min || 0, r.workload.short_people || 0,
       r.workload.help_requested || "", r.workload.no_help_reason || "",
       r.team_state.team_collab || "", r.team_state.team_collab_note || "",
