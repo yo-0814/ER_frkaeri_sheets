@@ -4221,6 +4221,29 @@ function histRatingsBlock(r) {
       <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.hospitality)} 接遇 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.hospitality || "—"}</span></div>
       <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.wait_care)} 待ち配慮 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.wait_care || "—"}</span></div>
       <div class="text-[11px] flex items-center gap-1.5">${ratingDot(pat.anxiety_relief)} 不安軽減 <span class="ml-auto font-semibold text-[var(--navy-800)]">${pat.anxiety_relief || "—"}</span></div>
+    </div>
+    ${histTeamNotesBlock(r)}`;
+}
+
+// チーム状態の「具体的な場面」メモを表示
+function histTeamNotesBlock(r) {
+  const team = r.team_state || {};
+  const notes = [
+    { label: "チーム連携", text: team.team_collab_note },
+    { label: "他機関連携", text: team.external_collab_note },
+    { label: "心理的安全", text: team.psych_safety_note },
+  ].filter(n => n.text && n.text.trim());
+
+  if (notes.length === 0) return "";
+
+  return `
+    <div class="mt-2 space-y-1.5">
+      ${notes.map(n => `
+        <div class="text-[11px] text-[var(--navy-700)] bg-[var(--soft-info)] p-2 rounded-md">
+          <span class="font-semibold">${n.label}の具体的な場面</span><br>
+          <span class="leading-relaxed whitespace-pre-wrap">${escapeHtml(n.text)}</span>
+        </div>
+      `).join("")}
     </div>`;
 }
 
