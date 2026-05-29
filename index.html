@@ -842,6 +842,119 @@
     40% { transform: scale(1.4); color: var(--bad); }
     100% { transform: scale(1); }
   }
+
+  /* ================ 文字サイズ切替トグル ================ */
+  .font-size-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 44px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid var(--line);
+    color: var(--navy-700);
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+    cursor: pointer;
+    transition: all .1s;
+    line-height: 1;
+    padding: 0;
+  }
+  .font-size-toggle:active { transform: scale(.95); }
+  .font-size-toggle .fst-label {
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -1px;
+  }
+  /* 大きめ：紺背景 / ラベル "A+" */
+  html[data-fontsize="large"] .font-size-toggle {
+    background: var(--navy-800);
+    color: #fff;
+    border-color: var(--navy-800);
+  }
+  html[data-fontsize="large"] .font-size-toggle .fst-label::after {
+    content: "+";
+    font-size: 12px;
+  }
+  /* 特大：緑背景 / ラベル "A++" */
+  html[data-fontsize="xlarge"] .font-size-toggle {
+    background: var(--good);
+    color: #fff;
+    border-color: var(--good);
+  }
+  html[data-fontsize="xlarge"] .font-size-toggle .fst-label {
+    font-size: 16px;
+  }
+  html[data-fontsize="xlarge"] .font-size-toggle .fst-label::after {
+    content: "++";
+    font-size: 12px;
+  }
+
+  /* ================ 大きめモード（+2px / 約15%）================ */
+  html[data-fontsize="large"] body { font-size: 16px; }
+  html[data-fontsize="large"] .text-\[10px\] { font-size: 12px !important; }
+  html[data-fontsize="large"] .text-\[11px\] { font-size: 13px !important; }
+  html[data-fontsize="large"] .text-\[12px\] { font-size: 14px !important; }
+  html[data-fontsize="large"] .text-\[13px\] { font-size: 15px !important; }
+  html[data-fontsize="large"] .text-\[14px\] { font-size: 16px !important; }
+  html[data-fontsize="large"] .text-\[15px\] { font-size: 17px !important; }
+  html[data-fontsize="large"] .text-\[16px\] { font-size: 18px !important; }
+  html[data-fontsize="large"] .text-\[17px\] { font-size: 19px !important; }
+  html[data-fontsize="large"] .text-\[18px\] { font-size: 20px !important; }
+  html[data-fontsize="large"] .text-\[19px\] { font-size: 22px !important; }
+  html[data-fontsize="large"] .text-\[20px\] { font-size: 23px !important; }
+
+  html[data-fontsize="large"] .lbl,
+  html[data-fontsize="large"] .fld,
+  html[data-fontsize="large"] input[type="text"],
+  html[data-fontsize="large"] input[type="number"],
+  html[data-fontsize="large"] input[type="date"],
+  html[data-fontsize="large"] textarea,
+  html[data-fontsize="large"] select { font-size: 16px; }
+  html[data-fontsize="large"] .seg-btn { font-size: 16px; padding-top: 14px; padding-bottom: 14px; min-height: 52px; }
+  html[data-fontsize="large"] .chip { font-size: 14px; padding: 9px 14px; }
+  html[data-fontsize="large"] .stepper button { width: 48px; height: 48px; font-size: 22px; }
+  html[data-fontsize="large"] .stepper input { font-size: 20px; }
+  html[data-fontsize="large"] .staff-select-trigger { font-size: 16px; padding: 14px; min-height: 52px; }
+  html[data-fontsize="large"] .staff-select-option { font-size: 16px; padding: 14px; }
+  html[data-fontsize="large"] .staff-select-search { font-size: 16px; padding: 12px; }
+  html[data-fontsize="large"] .btn-primary,
+  html[data-fontsize="large"] .btn-secondary { font-size: 16px; padding-top: 14px; padding-bottom: 14px; min-height: 52px; }
+  html[data-fontsize="large"] .tab-btn { font-size: 15px; }
+  html[data-fontsize="large"] .sec-title { font-size: 17px; }
+
+  /* ================ 特大モード（+5〜6px / 約40〜50%）================ */
+  html[data-fontsize="xlarge"] body { font-size: 18px; }
+  html[data-fontsize="xlarge"] .text-\[10px\] { font-size: 14px !important; }
+  html[data-fontsize="xlarge"] .text-\[11px\] { font-size: 15px !important; }
+  html[data-fontsize="xlarge"] .text-\[12px\] { font-size: 17px !important; }
+  html[data-fontsize="xlarge"] .text-\[13px\] { font-size: 18px !important; }
+  html[data-fontsize="xlarge"] .text-\[14px\] { font-size: 19px !important; }
+  html[data-fontsize="xlarge"] .text-\[15px\] { font-size: 20px !important; }
+  html[data-fontsize="xlarge"] .text-\[16px\] { font-size: 22px !important; }
+  html[data-fontsize="xlarge"] .text-\[17px\] { font-size: 23px !important; }
+  html[data-fontsize="xlarge"] .text-\[18px\] { font-size: 24px !important; }
+  html[data-fontsize="xlarge"] .text-\[19px\] { font-size: 26px !important; }
+  html[data-fontsize="xlarge"] .text-\[20px\] { font-size: 27px !important; }
+
+  html[data-fontsize="xlarge"] .lbl,
+  html[data-fontsize="xlarge"] .fld,
+  html[data-fontsize="xlarge"] input[type="text"],
+  html[data-fontsize="xlarge"] input[type="number"],
+  html[data-fontsize="xlarge"] input[type="date"],
+  html[data-fontsize="xlarge"] textarea,
+  html[data-fontsize="xlarge"] select { font-size: 19px; }
+  html[data-fontsize="xlarge"] .seg-btn { font-size: 19px; padding-top: 18px; padding-bottom: 18px; min-height: 64px; }
+  html[data-fontsize="xlarge"] .chip { font-size: 17px; padding: 12px 18px; }
+  html[data-fontsize="xlarge"] .stepper button { width: 56px; height: 56px; font-size: 28px; }
+  html[data-fontsize="xlarge"] .stepper input { font-size: 24px; }
+  html[data-fontsize="xlarge"] .staff-select-trigger { font-size: 19px; padding: 18px; min-height: 64px; }
+  html[data-fontsize="xlarge"] .staff-select-option { font-size: 19px; padding: 18px; }
+  html[data-fontsize="xlarge"] .staff-select-search { font-size: 19px; padding: 15px; }
+  html[data-fontsize="xlarge"] .btn-primary,
+  html[data-fontsize="xlarge"] .btn-secondary { font-size: 19px; padding-top: 18px; padding-bottom: 18px; min-height: 64px; }
+  html[data-fontsize="xlarge"] .tab-btn { font-size: 18px; }
+  html[data-fontsize="xlarge"] .sec-title { font-size: 21px; }
 </style>
 </head>
 <body class="pb-24">
@@ -857,6 +970,9 @@
         <div class="text-[10px] font-bold tracking-[0.25em] text-[var(--blue-500)]">浦添ER</div>
         <h1 class="font-display font-bold text-[19px] leading-tight text-[var(--navy-900)]">振り返り共有シート</h1>
       </div>
+      <button type="button" id="fontSizeToggle" class="font-size-toggle ml-auto" aria-label="文字サイズ切替" title="文字サイズ切替">
+        <span class="fst-label">A</span>
+      </button>
     </div>
   </div>
 </header>
@@ -1871,6 +1987,7 @@ function init() {
   setupCases();
   setupRoleManagement();
   setupStaffManager();
+  setupFontSizeToggle();
   initAllStaffSelects();
   refreshReporterList();
   refreshNotificationBadge();
@@ -1879,6 +1996,30 @@ function init() {
   renderStats();
 
   applyRole();  // ← 追加：UIに現在のロールを反映
+}
+
+// ════════════════════════════════════════════════════════════════
+//  文字サイズ切替（標準⇄大きめ⇄特大の3段階サイクル）
+//  - 共有端末を想定するため localStorage には保存しない
+//  - リロードすると標準に戻る、その時々で本人が切り替える運用
+// ════════════════════════════════════════════════════════════════
+function setupFontSizeToggle() {
+  const btn = $("#fontSizeToggle");
+  if (!btn) return;
+  const CYCLE = ["", "large", "xlarge"];
+  const LABELS = { "": "標準", "large": "大きめ", "xlarge": "特大" };
+  btn.addEventListener("click", () => {
+    const html = document.documentElement;
+    const current = html.dataset.fontsize || "";
+    const idx = CYCLE.indexOf(current);
+    const next = CYCLE[(idx + 1) % CYCLE.length];
+    if (next === "") {
+      delete html.dataset.fontsize;
+    } else {
+      html.dataset.fontsize = next;
+    }
+    toast(`文字サイズを「${LABELS[next]}」に`);
+  });
 }
 
 // ════════════════════════════════════════════════════════════════
