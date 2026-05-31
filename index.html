@@ -1661,6 +1661,29 @@
   </div>
 </div>
 
+<!-- ============ MODAL: 改姓確認 ============ -->
+<div class="modal-backdrop" id="renameModal">
+  <div class="modal">
+    <div class="p-5">
+      <div class="font-display font-bold text-[16px] mb-2" id="renameModalTitle">名前を変更します</div>
+      <p class="text-[13px] text-[var(--navy-700)] leading-relaxed mb-1">これは同じ人ですか？</p>
+      <p class="text-[12px] text-[var(--muted)] leading-relaxed">
+        <span class="font-semibold text-[var(--navy-700)]">同じ人</span>（結婚で改姓など）<br>
+        　→ 過去のGood Jobも新しい名前に引き継ぎます<br><br>
+        <span class="font-semibold text-[var(--navy-700)]">別人として変更</span>（同姓の別の人ができた等）<br>
+        　→ 過去の記録は引き継ぎません
+      </p>
+    </div>
+    <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
+      <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" id="renameSeparateBtn">別人として変更</button>
+      <button class="p-4 text-[var(--navy-800)] font-bold" id="renameSameBtn">同じ人</button>
+    </div>
+    <div class="border-t border-[var(--line)]">
+      <button class="w-full p-3 text-[12px] text-[var(--muted)]" id="renameCancelBtn">キャンセル</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ MODAL: POST-SAVE ============ -->
 <div class="modal-backdrop" id="postSaveModal">
   <div class="modal">
@@ -2900,23 +2923,16 @@ function renderStaffManagerList() {
         return;
       }
 
-      // 名前が変わった → 同一人物か確認（過去のGood Jobを引き継ぐかどうか）
-      const inherit = window.confirm(
-        `「${oldName}」を「${newName}」に変更します。\n\n` +
-        `これは【同じ人】の名前変更ですか？\n\n` +
-        `・結婚などで改姓した同じ人 → 「OK」\n` +
-        `　（旧名「${oldName}」でもらった過去のGood Jobも新しい名前に合算されます）\n\n` +
-        `・別人と区別するための変更（同姓の別の人ができたので フルネームにする等）→ 「キャンセル」\n` +
-        `　（過去の記録は引き継がず、新しい名前で新たに集計します）`
-      );
-
-      const ok = updateStaff(id, newName, inherit);
-      if (ok) {
-        toast(inherit ? "保存しました（過去の記録も引き継ぎ）" : "保存しました（別人として区別）");
-        renderStaffManagerList();
-      } else {
-        toast("同じ名前のスタッフが既にいます");
-      }
+      // 名前が変わった → 同一人物か確認（モーダルで「同じ人/別人」を選ぶ）
+      openRenameModal(oldName, newName, (inherit) => {
+        const ok = updateStaff(id, newName, inherit);
+        if (ok) {
+          toast(inherit ? "保存しました（過去の記録も引き継ぎ）" : "保存しました（別人として区別）");
+          renderStaffManagerList();
+        } else {
+          toast("同じ名前のスタッフが既にいます");
+        }
+      });
     });
 
     delBtn.addEventListener("click", () => {
@@ -3006,6 +3022,41 @@ function setupStaffReorder(list) {
     touchDragging = null;
     commitOrder();
   });
+}
+
+// 改姓確認モーダルを開く。
+// onChoose(inherit) が呼ばれる: inherit=true→同じ人, false→別人として変更。
+// キャンセル時は onChoose を呼ばない。
+function openRenameModal(oldName, newName, onChoose) {
+  const titleEl = $("#renameModalTitle");
+  if (titleEl) titleEl.textContent = `「${oldName}」を「${newName}」に変更します`;
+
+  const sameBtn = $("#renameSameBtn");
+  const sepBtn = $("#renameSeparateBtn");
+  const cancelBtn = $("#renameCancelBtn");
+
+  // 既存リスナーを毎回貼り替えるため、cloneでリセット
+  const freshSame = sameBtn.cloneNode(true);
+  const freshSep = sepBtn.cloneNode(true);
+  const freshCancel = cancelBtn.cloneNode(true);
+  sameBtn.parentNode.replaceChild(freshSame, sameBtn);
+  sepBtn.parentNode.replaceChild(freshSep, sepBtn);
+  cancelBtn.parentNode.replaceChild(freshCancel, cancelBtn);
+
+  freshSame.addEventListener("click", () => {
+    closeModal("renameModal");
+    onChoose(true);
+  });
+  freshSep.addEventListener("click", () => {
+    closeModal("renameModal");
+    onChoose(false);
+  });
+  freshCancel.addEventListener("click", () => {
+    closeModal("renameModal");
+    // キャンセルは何もしない
+  });
+
+  openModal("renameModal");
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -4229,8 +4280,20 @@ function showEncourageMessage(text, isError) {
   if (!loading || !msg) return;
   loading.classList.add("hidden");
   msg.classList.remove("hidden");
-  msg.textContent = text;
+  // Geminiが改行を「本物の改行」ではなく文字列の \n や \r\n として返すことがあるため、
+  // 実際の改行文字に正規化してから表示する（whitespace-pre-line で改行が反映される）。
+  msg.textContent = normalizeNewlines(text);
   msg.style.color = isError ? "var(--muted)" : "";
+}
+
+// 文字列リテラルの "\n" "\r\n" "\\n" などを本物の改行に変換する
+function normalizeNewlines(text) {
+  if (text == null) return "";
+  return String(text)
+    .replace(/\r\n/g, "\n")        // CRLF → LF
+    .replace(/\\r\\n/g, "\n")      // 文字列としての \r\n
+    .replace(/\\n/g, "\n")          // 文字列としての \n
+    .replace(/\\\n/g, "\n");        // バックスラッシュ+実改行
 }
 
 function resetEncourageBox() {
