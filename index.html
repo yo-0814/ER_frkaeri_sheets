@@ -757,6 +757,12 @@
     border-radius: 10px;
     background: var(--paper);
   }
+  .staff-mgr-row-wrap {
+    border-bottom: 1px solid var(--line);
+    background: #fff;
+  }
+  .staff-mgr-row-wrap:last-child { border-bottom: none; }
+  .staff-mgr-row-wrap .staff-mgr-row { border-bottom: none; }
   .staff-mgr-row {
     display: flex;
     align-items: center;
@@ -2007,6 +2013,33 @@ function parseGoodJobTargets(target) {
   return String(target).split(",").map(s => s.trim()).filter(Boolean);
 }
 
+// 改姓対応：旧姓(alias)を現在の名前へ名寄せするマップを作る。
+// スタッフ名簿の各人の aliases（旧姓の配列）を見て、
+// 「正規化した旧姓 → 現在の表示名」の対応表を返す。
+// ランキング集計時にこのマップで旧姓のGood Jobを新姓に合算する。
+function buildNameAliasMap() {
+  const map = new Map();
+  try {
+    loadStaff().forEach(s => {
+      if (!s || !s.name || !Array.isArray(s.aliases)) return;
+      s.aliases.forEach(alias => {
+        const key = normalizeStaffName(alias);
+        if (key) map.set(key, s.name);
+      });
+    });
+  } catch (e) {
+    console.warn("buildNameAliasMap failed:", e);
+  }
+  return map;
+}
+
+// 名前を現在の表示名へ解決する（旧姓なら新姓へ、そうでなければそのまま）
+function resolveCurrentName(name, aliasMap) {
+  if (!name) return name;
+  const resolved = aliasMap.get(normalizeStaffName(name));
+  return resolved || name;
+}
+
 function debounce(fn, wait) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), wait); };
@@ -2297,9 +2330,14 @@ function addStaff(name) {
 }
 
 // スタッフ名を更新
-function updateStaff(id, newName) {
+// 名前を更新する。
+// inheritHistory=true なら旧名を aliases に記録し、過去のGood Jobを新名義に合算する（改姓など同一人物）。
+// inheritHistory=false なら aliases に追加しない（別人と区別するための改名・フルネーム化など）。
+function updateStaff(id, newName, inheritHistory) {
   const trimmed = String(newName || "").trim();
   if (!trimmed) return false;
+  // 複数選択値の混入防止
+  if (trimmed.includes(",") || trimmed.includes("、")) return false;
   const all = loadStaff();
   const idx = all.findIndex(s => s.id === id);
   if (idx < 0) return false;
@@ -2307,6 +2345,18 @@ function updateStaff(id, newName) {
   const norm = normalizeStaffName(trimmed);
   const dup = all.find(s => s.id !== id && normalizeStaffName(s.name) === norm);
   if (dup) return false; // 重複あり
+
+  const oldName = all[idx].name;
+  // 名前が実際に変わり、かつ「過去を引き継ぐ」指定のときだけ旧名を aliases に記録
+  if (inheritHistory && normalizeStaffName(oldName) !== norm) {
+    if (!Array.isArray(all[idx].aliases)) all[idx].aliases = [];
+    const aliasNorms = all[idx].aliases.map(normalizeStaffName);
+    if (oldName && !aliasNorms.includes(normalizeStaffName(oldName))) {
+      all[idx].aliases.push(oldName);
+    }
+    all[idx].aliases = all[idx].aliases.filter(a => normalizeStaffName(a) !== norm);
+  }
+
   all[idx].name = trimmed;
   all[idx].updated_at_ms = Date.now();
   saveStaff(all);
@@ -2758,13 +2808,22 @@ function renderStaffManagerList() {
     return;
   }
 
-  list.innerHTML = all.map(s => `
-    <div class="staff-mgr-row" data-id="${escapeHtml(s.id)}">
-      <input type="text" value="${escapeHtml(s.name)}" data-staff-name />
-      <button type="button" data-action="save" style="background:var(--soft-info);color:var(--navy-700);border-color:var(--line-strong)" title="保存">保存</button>
-      <button type="button" data-action="delete" style="background:#fef2f2;color:var(--bad);border-color:#fecaca" title="削除">削除</button>
+  list.innerHTML = all.map(s => {
+    const aliases = Array.isArray(s.aliases) ? s.aliases.filter(Boolean) : [];
+    const aliasLine = aliases.length > 0
+      ? `<div class="text-[10px] text-[var(--muted)] mt-0.5 px-1">旧姓: ${aliases.map(escapeHtml).join("、")}（ランキングは合算されます）</div>`
+      : "";
+    return `
+    <div class="staff-mgr-row-wrap">
+      <div class="staff-mgr-row" data-id="${escapeHtml(s.id)}">
+        <input type="text" value="${escapeHtml(s.name)}" data-staff-name />
+        <button type="button" data-action="save" style="background:var(--soft-info);color:var(--navy-700);border-color:var(--line-strong)" title="保存">保存</button>
+        <button type="button" data-action="delete" style="background:#fef2f2;color:var(--bad);border-color:#fecaca" title="削除">削除</button>
+      </div>
+      ${aliasLine}
     </div>
-  `).join("");
+  `;
+  }).join("");
 
   list.querySelectorAll(".staff-mgr-row").forEach(row => {
     const id = row.dataset.id;
@@ -2775,9 +2834,32 @@ function renderStaffManagerList() {
     saveBtn.addEventListener("click", () => {
       const newName = input.value.trim();
       if (!newName) { toast("名前を入力してください"); return; }
-      const ok = updateStaff(id, newName);
+
+      // 現在の名前を取得
+      const current = loadStaff().find(s => s.id === id);
+      const oldName = current ? current.name : "";
+
+      // 名前が変わっていない（誤字修正でもない）なら、そのまま保存
+      if (normalizeStaffName(oldName) === normalizeStaffName(newName)) {
+        const ok = updateStaff(id, newName, false);
+        toast(ok ? "保存しました" : "同じ名前のスタッフが既にいます");
+        if (ok) renderStaffManagerList();
+        return;
+      }
+
+      // 名前が変わった → 同一人物か確認（過去のGood Jobを引き継ぐかどうか）
+      const inherit = window.confirm(
+        `「${oldName}」を「${newName}」に変更します。\n\n` +
+        `これは【同じ人】の名前変更ですか？\n\n` +
+        `・結婚などで改姓した同じ人 → 「OK」\n` +
+        `　（旧名「${oldName}」でもらった過去のGood Jobも新しい名前に合算されます）\n\n` +
+        `・別人と区別するための変更（同姓の別の人ができたので フルネームにする等）→ 「キャンセル」\n` +
+        `　（過去の記録は引き継がず、新しい名前で新たに集計します）`
+      );
+
+      const ok = updateStaff(id, newName, inherit);
       if (ok) {
-        toast("保存しました");
+        toast(inherit ? "保存しました（過去の記録も引き継ぎ）" : "保存しました（別人として区別）");
         renderStaffManagerList();
       } else {
         toast("同じ名前のスタッフが既にいます");
@@ -2812,14 +2894,31 @@ const saveSyncQueue = (q) => localStorage.setItem(SYNC_QUEUE_KEY, JSON.stringify
 // キューに追加（重複排除：同じIDの保存リクエストは最新だけ残す）
 function enqueueSync(action, payload) {
   const q = loadSyncQueue();
-  if (action === "save" && payload && payload.id) {
+  const pid = payload && payload.id;
+
+  if (action === "save" && pid) {
     // 同IDの古い保存リクエストを削除
-    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === payload.id));
+    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === pid));
     filtered.push({ action, payload, queued_at: Date.now() });
     saveSyncQueue(filtered);
-  } else if (action === "delete" && payload && payload.id) {
+  } else if (action === "delete" && pid) {
     // 同IDの保存リクエストもキューから削除（送信前に削除されたら無駄なので）
-    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === payload.id));
+    const filtered = q.filter(item => !(item.action === "save" && item.payload && item.payload.id === pid));
+    filtered.push({ action, payload, queued_at: Date.now() });
+    saveSyncQueue(filtered);
+  } else if ((action === "staff_add" || action === "staff_update") && pid) {
+    // 同IDの古いスタッフ追加/更新を削除し、最新だけ残す
+    const filtered = q.filter(item =>
+      !((item.action === "staff_add" || item.action === "staff_update") &&
+        item.payload && item.payload.id === pid));
+    filtered.push({ action, payload, queued_at: Date.now() });
+    saveSyncQueue(filtered);
+  } else if (action === "staff_delete" && pid) {
+    // 重要：送信前に削除されたスタッフは、キュー内の add/update を相殺する。
+    // これをしないと、未送信の staff_add が後で実行されてGASに復活してしまう。
+    const filtered = q.filter(item =>
+      !((item.action === "staff_add" || item.action === "staff_update" || item.action === "staff_delete") &&
+        item.payload && item.payload.id === pid));
     filtered.push({ action, payload, queued_at: Date.now() });
     saveSyncQueue(filtered);
   } else {
@@ -4445,13 +4544,18 @@ function renderRanking(allRecords) {
     return ts >= yearStart && ts < yearEnd;
   });
 
+  // 改姓対応：旧姓→新姓の名寄せマップ
+  const aliasMap = buildNameAliasMap();
+
   const tally = new Map();
   yearRecords.forEach(r => {
     getGoodJobs(r).forEach(g => {
       // 複数対象者（カンマ区切り）に対応：各人それぞれにカウント
       const targets = parseGoodJobTargets(g.target);
       if (targets.length === 0) return;
-      targets.forEach(target => {
+      targets.forEach(rawTarget => {
+        // 旧姓なら現在の名前に合算する
+        const target = resolveCurrentName(rawTarget, aliasMap);
         if (!tally.has(target)) tally.set(target, { count: 0, comments: [] });
         const entry = tally.get(target);
         entry.count += 1;
