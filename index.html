@@ -305,6 +305,8 @@
     padding: 20px;
   }
   .modal-backdrop[data-open="true"] { display: flex; }
+  /* モーダルの上に重ねて開くモーダル（改姓確認など）は最前面に */
+  #renameModal { z-index: 70; }
   .modal {
     background: #fff;
     border-radius: 16px;
@@ -4496,7 +4498,9 @@ function resetForm() {
 function openModal(id) { $("#"+id).dataset.open = "true"; document.body.style.overflow="hidden"; }
 function closeModal(id) {
   $("#"+id).dataset.open = "false";
-  document.body.style.overflow="";
+  // 他に開いているモーダルが無いときだけスクロールロックを解除
+  const anyOpen = $$('.modal-backdrop[data-open="true"]').length > 0;
+  if (!anyOpen) document.body.style.overflow="";
   if (id === "shareModal" && shareReadTimer) {
     clearTimeout(shareReadTimer);
     shareReadTimer = null;
