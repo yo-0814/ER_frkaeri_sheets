@@ -3616,16 +3616,10 @@ function refreshReporterList() {
       existingNorms.add(normalizeStaffName(reporter));
       added++;
     }
-    getGoodJobs(r).forEach(g => {
-      // 複数選択（カンマ区切り）に対応：各人を個別に登録
-      parseGoodJobTargets(g.target).forEach(t => {
-        if (t && !existingNorms.has(normalizeStaffName(t))) {
-          addStaff(t);
-          existingNorms.add(normalizeStaffName(t));
-          added++;
-        }
-      });
-    });
+    // Good Job 対象者は自動登録しない。
+    // 理由: 「全員」「レントゲン技師(...)」のような対象者メモが
+    // 名簿に紛れ込み、削除しても過去記録から復活する原因になるため。
+    // 対象者の登録が必要なときは、Good Job入力欄の「新しい人を追加」から手動で行う。
   });
 
   // 互換: もし datalist が画面に存在すれば（旧UI併用時）更新
