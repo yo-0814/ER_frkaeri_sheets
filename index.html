@@ -983,6 +983,90 @@
   html[data-fontsize="xlarge"] .btn-secondary { font-size: 19px; padding-top: 18px; padding-bottom: 18px; min-height: 64px; }
   html[data-fontsize="xlarge"] .tab-btn { font-size: 18px; }
   html[data-fontsize="xlarge"] .sec-title { font-size: 21px; }
+
+  /* ===== 操作マニュアル（ガイドモーダル）専用スタイル：#guideContent にスコープ ===== */
+#guideContent {--navy:#12284d; --navy-2:#1b3a6b; --blue:#2f6fb8;
+    --ink:#1f2a40; --sub:#5b6678; --line:#dbe2ee;
+    --card:#ffffff; --soft:#eef3fb; --paper:#f4f7fc;
+    --req:#dc2626; --good:#16a34a; --good-bg:#e9f7ef;
+    --mid:#d97706; --gold:#e8a317; --silver:#9aa3ad; --bronze:#c1763a;}
+#guideContent *,#guideContent *::before,#guideContent *::after {box-sizing:border-box;margin:0;padding:0;}
+#guideContent {font-family:"Noto Sans JP",sans-serif;color:var(--ink);background:var(--paper);line-height:1.7;-webkit-font-smoothing:antialiased;padding:26px 16px;}
+#guideContent .sheet {max-width:840px;margin:0 auto 22px;background:var(--card);border-radius:18px;overflow:hidden;box-shadow:0 12px 40px rgba(18,40,77,.12);}
+#guideContent .head {background:linear-gradient(135deg,var(--navy) 0%,var(--navy-2) 100%);color:#fff;padding:26px 34px 24px;position:relative;overflow:hidden;}
+#guideContent .head::after {content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(255,255,255,.05);}
+#guideContent .head .brand {font-size:12px;letter-spacing:.24em;font-weight:700;color:#aac4ee;margin-bottom:4px;}
+#guideContent .head h1 {font-family:"Zen Kaku Gothic New",sans-serif;font-size:30px;font-weight:900;letter-spacing:.02em;}
+#guideContent .head .lead {margin-top:8px;font-size:13.5px;color:#d7e3f5;font-weight:400;}
+#guideContent .req-note {margin:0 34px;margin-top:-13px;position:relative;z-index:2;background:#fff5f5;border:1.5px solid #f6c9c9;border-radius:12px;padding:13px 18px;display:flex;align-items:center;gap:12px;font-size:13.5px;font-weight:500;color:#7a2020;}
+#guideContent .req-note .star {color:var(--req);font-weight:900;font-size:22px;line-height:1;flex-shrink:0;}
+#guideContent .body {padding:24px 34px 10px;}
+#guideContent .sec {margin-bottom:22px;break-inside:avoid;}
+#guideContent .sec-head {display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+#guideContent .tab-chip {flex-shrink:0;display:inline-flex;align-items:center;gap:6px;background:var(--navy);color:#fff;font-family:"Zen Kaku Gothic New",sans-serif;font-weight:700;font-size:14px;padding:6px 14px;border-radius:9px;}
+#guideContent .tab-chip svg {width:15px;height:15px;}
+#guideContent .sec-head .desc {font-size:12.5px;color:var(--sub);font-weight:500;}
+#guideContent .card {border:1px solid var(--line);border-radius:13px;padding:16px 18px;background:var(--card);}
+#guideContent .card.tint {background:var(--soft);border-color:#d4e0f2;}
+#guideContent ul.points {list-style:none;}
+#guideContent ul.points li {position:relative;padding:5px 0 5px 24px;font-size:13.5px;}
+#guideContent ul.points li::before {content:"";position:absolute;left:4px;top:13px;width:7px;height:7px;border-radius:50%;background:var(--blue);}
+#guideContent .k {font-weight:700;color:var(--navy);}
+#guideContent .reqtag {color:var(--req);font-weight:900;font-size:13px;margin:0 1px;}
+#guideContent .fields {display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
+#guideContent .field {background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 11px;font-size:12.5px;font-weight:500;}
+#guideContent .opt-pill {background:#eef1f6;color:#6b7689;border-color:#dce1ea;}
+#guideContent .callout {margin-top:10px;background:#eff6ff;border:1px solid #c9ddf7;border-radius:9px;padding:10px 14px;font-size:12.5px;color:#1d3c6e;}
+#guideContent .callout.green {background:var(--good-bg);border-color:#bfe6cc;color:#136b34;}
+#guideContent .callout.amber {background:#fffaf0;border-color:#f0dcb0;color:#8a5a08;}
+#guideContent .callout b {color:inherit;}
+#guideContent .grid2 {display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+#guideContent .mode-card {border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;}
+#guideContent .mode-card .mt {font-weight:700;color:var(--navy);font-size:14px;margin-bottom:4px;display:flex;align-items:center;gap:7px;}
+#guideContent .mode-card .md {font-size:12.5px;color:var(--sub);line-height:1.6;}
+#guideContent .mode-card.lite {background:var(--soft);border-color:#d4e0f2;}
+#guideContent .pill {display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 8px;color:#fff;}
+#guideContent .steps {counter-reset:step;list-style:none;}
+#guideContent .steps li {position:relative;padding:4px 0 12px 38px;font-size:13.5px;}
+#guideContent .steps li::before {counter-increment:step;content:counter(step);position:absolute;left:0;top:2px;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;}
+#guideContent .steps li:not(:last-child)::after {content:"";position:absolute;left:11.5px;top:28px;bottom:2px;width:1.5px;background:var(--line);}
+#guideContent .rank-row {display:flex;align-items:center;gap:10px;font-size:13px;padding:3px 0;}
+#guideContent .medal {width:24px;height:24px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;}
+#guideContent .m1 {background:var(--gold);}
+#guideContent .m2 {background:var(--silver);}
+#guideContent .m3 {background:var(--bronze);}
+#guideContent .icon-ref {display:flex;gap:10px;flex-wrap:wrap;}
+#guideContent .icon-card {flex:1;min-width:200px;border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:flex;gap:13px;align-items:flex-start;}
+#guideContent .icon-badge {flex-shrink:0;width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:var(--navy);color:#fff;font-weight:900;font-size:16px;}
+#guideContent .icon-badge svg {width:20px;height:20px;}
+#guideContent .icon-card .t {font-weight:700;color:var(--navy);font-size:13.5px;margin-bottom:2px;}
+#guideContent .icon-card .d {font-size:12.5px;color:var(--sub);line-height:1.55;}
+#guideContent .admin-card {border-radius:13px;padding:14px 16px;border:1px solid var(--line);display:flex;gap:13px;align-items:flex-start;break-inside:avoid;}
+#guideContent .admin-card .ico {flex-shrink:0;width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;}
+#guideContent .admin-card .t {font-weight:700;font-size:13.5px;margin-bottom:2px;}
+#guideContent .admin-card .d {font-size:12.5px;color:var(--sub);line-height:1.55;}
+#guideContent .admin-card .tag {display:inline-block;font-size:11px;font-weight:900;border-radius:6px;padding:2px 9px;margin-bottom:5px;letter-spacing:.03em;}
+#guideContent .ok {background:#f0faf3;border-color:#bfe6cc;}
+#guideContent .ok .ico {background:var(--good-bg);color:var(--good);}
+#guideContent .ok .t {color:#136b34;}
+#guideContent .ok .tag {background:var(--good);color:#fff;}
+#guideContent .warn {background:#fffaf0;border-color:#f0dcb0;}
+#guideContent .warn .ico {background:#fdf2da;color:#b87d12;}
+#guideContent .warn .t {color:#8a5a08;}
+#guideContent .warn .tag {background:#e0a423;color:#fff;}
+#guideContent .danger {background:#fff5f5;border:1.5px solid #f3b6b6;}
+#guideContent .danger .ico {background:#fde8e8;color:var(--req);}
+#guideContent .danger .t {color:var(--req);}
+#guideContent .danger .tag {background:var(--req);color:#fff;}
+#guideContent .admin-grid {display:grid;grid-template-columns:1fr 1fr;gap:11px;}
+#guideContent .foot {margin-top:6px;padding:16px 34px 24px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:11.5px;color:var(--sub);}
+#guideContent .foot .tip {background:var(--good-bg);color:#136b34;font-weight:700;padding:5px 12px;border-radius:20px;font-size:11.5px;}
+#guideContent .grid2, #guideContent .admin-grid {grid-template-columns:1fr;}
+#guideContent {background:#fff;padding:0;}
+#guideContent .sheet {box-shadow:none;border-radius:0;max-width:100%;margin:0;}
+#guideContent .sec {break-inside:avoid;}
+
+    @page{margin:11mm;}
 </style>
 </head>
 <body class="pb-24">
@@ -1511,6 +1595,19 @@
 
     <div id="statsContent"></div>
 
+    <!-- 使い方ガイド（誰でも閲覧可） -->
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        <div class="font-display font-bold text-[15px]">使い方ガイド</div>
+      </div>
+      <p class="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">入力のしかたや各機能の使い方をまとめた操作マニュアルです。困ったときに開いてください。</p>
+      <button id="guideBtn" class="btn-secondary w-full flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        使い方ガイドを開く
+      </button>
+    </div>
+
     <!-- スタッフ名簿管理 -->
     <div class="card p-5 admin-only">
       <div class="flex items-center gap-2 mb-2">
@@ -1659,6 +1756,242 @@
     <div class="grid grid-cols-2 gap-0 border-t border-[var(--line)]">
       <button class="p-4 text-[var(--muted)] font-semibold border-r border-[var(--line)]" onclick="closeModal('confirmModal'); encouragePrefetch=null;">キャンセル</button>
       <button class="p-4 text-[var(--navy-800)] font-bold" id="confirmSaveBtn">保存する</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MODAL: 使い方ガイド（操作マニュアル） ============ -->
+<div class="modal-backdrop" id="guideModal">
+  <div class="modal" style="max-width:880px;width:100%;max-height:90vh;display:flex;flex-direction:column;padding:0;overflow:hidden">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);flex-shrink:0;background:#fff">
+      <div class="font-display font-bold text-[15px]">使い方ガイド</div>
+      <button class="text-[var(--muted)] p-2 -m-2" onclick="closeModal('guideModal')" aria-label="閉じる">
+        <svg viewBox="0 0 24 24" width="20" height="20" class="ico"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+    <div id="guideContent" style="overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1;padding:0">
+
+<div class="sheet">
+
+  <div class="head">
+    <div class="brand">浦添 ER</div>
+    <h1>振り返り共有シート　操作マニュアル</h1>
+  </div>
+
+  <div class="req-note">
+    <span class="star">※</span>
+    <span><b>「※」が付いた項目は必須入力です。</b>未入力だと保存できません。まず※を埋めればOKです。</span>
+  </div>
+
+  <div class="body">
+
+    <!-- 利用モード -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:var(--blue);">🔑 はじめに：利用モード</span>
+        <span class="desc">初回起動時にどちらかを選びます</span>
+      </div>
+      <div class="grid2">
+        <div class="mode-card lite">
+          <div class="mt"><span class="pill" style="background:var(--blue);">通常</span>入力専用モード</div>
+          <div class="md">振り返りの<b>入力</b>と、履歴・統計・共有事項の<b>閲覧</b>ができます。記録の編集・削除や管理機能はできません。普段はこちらでOK。</div>
+        </div>
+        <div class="mode-card">
+          <div class="mt"><span class="pill" style="background:var(--navy);">管理</span>管理者モード</div>
+          <div class="md">入力・閲覧に加えて、<b>記録の編集／削除・クラウド同期・スタッフ管理・CSV出力</b>などが可能。切替に<b>暗証番号</b>が必要です。</div>
+        </div>
+      </div>
+      <div class="callout">🔒 モードは画面<b>右下の鍵アイコン</b>でいつでも切り替えられます。管理者モードに入るときだけ暗証番号が必要です（入力専用に戻すときは不要）。</div>
+    </div>
+
+    <!-- 入力タブ -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+          入力
+        </span>
+        <span class="desc">勤務終わりに、その日の振り返りを記録</span>
+      </div>
+      <div class="card">
+        <ol class="steps">
+          <li><span class="k">基本情報</span>（日付・勤務帯・看護師人数・時差・記録者名）を入力。記録者名は一覧から選択、無ければ<span class="k">「＋ 新しい人を追加」</span>で登録できます。</li>
+          <li><span class="k">休憩・チーム・患者家族・振り返りケース</span>の各項目を選択（※の項目は必須）。</li>
+          <li>任意で<span class="k">good job</span>・<span class="k">共有事項</span>を記入。</li>
+          <li>画面下の<span class="k">「振り返りを保存」</span>→ 確認 → 保存完了。</li>
+        </ol>
+        <div class="fields">
+          <span class="field">日付<span class="reqtag">※</span></span>
+          <span class="field">勤務帯<span class="reqtag">※</span></span>
+          <span class="field">看護師（人数）<span class="reqtag">※</span></span>
+          <span class="field">時差<span class="reqtag">※</span></span>
+          <span class="field">記録者名<span class="reqtag">※</span></span>
+          <span class="field">休憩の確保<span class="reqtag">※</span></span>
+          <span class="field">チームの状態<span class="reqtag">※</span></span>
+          <span class="field">患者・家族への関わり<span class="reqtag">※</span></span>
+          <span class="field">振り返りケース<span class="reqtag">※</span></span>
+          <span class="field opt-pill">good job（任意）</span>
+          <span class="field opt-pill">共有事項（任意）</span>
+        </div>
+        <div class="callout amber" style="margin-top:12px;">
+          ⓘ <b>選択で入力欄が増える項目があります。</b>休憩が「できなかった」→ 不足時間・人数・応援要請を入力。振り返りケースが「あり」→ 症例（搬送区分・年齢・性別・主訴・内容）を追加（複数可）。<b>症例は個人が特定されないように</b>記入してください。
+        </div>
+      </div>
+    </div>
+
+    <!-- good job -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:var(--good);">👍 本日の good job</span>
+        <span class="desc">良かったスタッフへの一言（任意）</span>
+      </div>
+      <div class="card tint">
+        <ul class="points">
+          <li>その勤務で<span class="k">良い関わり・アセスメント・対応</span>をしていたスタッフへ、<span class="k">一言</span>を残せます。事例があれば具体的に書くと伝わります。</li>
+          <li><span class="k">対象者は複数選択できます。</span>全員を称えたいときはまとめて選択すればOK。</li>
+          <li>「＋ good job を追加」で、別の人・別の場面についても複数件記録できます。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 保存後 -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:var(--navy-2);">💬 保存したあと</span>
+      </div>
+      <div class="card">
+        <ul class="points">
+          <li>保存すると<span class="k">「今日のあなたへ」</span>として、その日の入力内容に合わせた<span class="k">AIメッセージ</span>が表示されます。</li>
+          <li>「閉じる」で入力をクリア、「履歴を見る」で履歴タブへ移動します。</li>
+        </ul>
+        <div class="callout amber">ⓘ <b>AIからのメッセージは見返せません。心に刻んでください。</b></div>
+      </div>
+    </div>
+
+    <!-- 履歴タブ -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+          履歴
+        </span>
+        <span class="desc">過去の記録とランキングを確認</span>
+      </div>
+      <div class="grid2">
+        <div class="card">
+          <ul class="points">
+            <li>他の端末で入力したデータは、<span class="k">「同期」ボタン</span>を押すと反映されます（同期ボタンは管理者モードのみ）。</li>
+            <li><span class="k">絞り込み</span>は条件指定に加え<span class="k">キーワード検索</span>も可能。「胸痛」など<span class="k">症例ごと</span>に探せます。</li>
+          </ul>
+          <div class="callout green">💪 <b>「お疲れさま」機能</b>　履歴を見て「頑張ったね」と思ったら、その記録を<b>ダブルタップ</b>。お疲れさまカウント（いいね的なもの）が送れます<b>（全く意味はありませんが、嬉しいかなと思ってつけてます）</b>。暇なときに<b>SNS感覚で自分のスマホから眺めて</b>、お疲れさまを送ってみてください。</div>
+        </div>
+        <div class="card">
+          <div style="font-weight:700;color:var(--navy);font-size:13px;margin-bottom:8px;">🏆 Good Job 年間ランキング</div>
+          <div class="rank-row"><span class="medal m1">1</span><span>1位</span></div>
+          <div class="rank-row"><span class="medal m2">2</span><span>2位</span></div>
+          <div class="rank-row"><span class="medal m3">3</span><span>3位</span></div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px;padding-left:2px;">「もっと見る」で<b style="color:var(--navy);">4位以下も表示</b>できます。</div>
+          <div class="callout" style="margin-top:8px;">上位3名への<b>特典・賞などは今のところありません（何か欲しいところですが…）。</b></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 統計タブ -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          統計
+        </span>
+        <span class="desc">記録を集計してチームの傾向を把握</span>
+      </div>
+      <div class="card">
+        <ul class="points">
+          <li>記録数・<span class="k">休憩確保率</span>・休憩未確保件数のほか、不足時間の分布や応援要請の状況も確認できます。</li>
+          <li>チーム・患者家族の評価は<span class="k">棒グラフ⇄円グラフ</span>を切り替えて表示できます。</li>
+          <li>条件での<span class="k">絞り込み</span>・<span class="k">キーワード検索</span>に対応。</li>
+        </ul>
+        <div class="callout">📊 <b>こんな見方の参考に。</b>「<b>休憩が取れなかったのは日勤帯が多い？</b>」「<b>過去30日は落ち着いていた？</b>」など、勤務の傾向をふり返る材料に。</div>
+        <div class="callout amber">ⓘ 統計は<b>今のところ決まった使い道はありません</b>。データを何かに活用したい方がいれば、教えてください。</div>
+      </div>
+    </div>
+
+    <!-- 右上ボタン -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:var(--blue);">画面右上のボタン</span>
+      </div>
+      <div class="icon-ref">
+        <div class="icon-card">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg></div>
+          <div>
+            <div class="t">🔔 ベルマーク</div>
+            <div class="d">入力した<b>「共有事項」</b>が集まります。未読には<b>NEW</b>が付きます。連絡・気づきはここから確認を。詳しい使い道は現在は未定です…。</div>
+          </div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-badge">A</div>
+          <div>
+            <div class="t">A ボタン（文字サイズ）</div>
+            <div class="d">押すたびに<b>標準 → 大きめ → 特大</b>と切り替わります。見やすいサイズに調整できます。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 管理画面 -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:#475569;">⚙️ 管理画面（管理者モードのみ）</span>
+        <span class="desc">統計タブの下に表示されます</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="admin-card ok">
+          <div class="ico">👥</div>
+          <div>
+            <span class="tag">使ってOK</span>
+            <div class="t">スタッフ名簿管理</div>
+            <div class="d">記録者・good job 対象者の選択肢を管理します。<b>入力ミスの修正や登録名の変更</b>はここから。名前を変えると<b>「同じ人／別人」</b>を確認され、「同じ人」（結婚での改姓など）を選ぶと過去のGood Jobランキングも引き継がれます。表記ゆれを防ぐため、追加した名前は全員で共有して使ってください。</div>
+          </div>
+        </div>
+        <div class="admin-grid">
+          <div class="admin-card warn">
+            <div class="ico">⬇️</div>
+            <div>
+              <span class="tag">基本さわらない</span>
+              <div class="t">データエクスポート（CSV）</div>
+              <div class="d">記録をCSVで書き出す機能。暗証番号が必要。通常運用では使いません。</div>
+            </div>
+          </div>
+          <div class="admin-card warn">
+            <div class="ico">🔄</div>
+            <div>
+              <span class="tag">基本さわらない</span>
+              <div class="t">バックアップ／復元</div>
+              <div class="d">記録と名簿をファイル（JSON）に書き出し・読み込み。移行・故障に備える用途で、通常は触りません。</div>
+            </div>
+          </div>
+        </div>
+        <div class="admin-card danger">
+          <div class="ico">🗑️</div>
+          <div>
+            <span class="tag">⚠️ 絶対に押さない</span>
+            <div class="t">履歴を全削除</div>
+            <div class="d"><b>すべての記録が消え、元に戻せません（ローカル＋クラウド両方）。</b>このボタンには絶対に触らないでください。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <span>浦添ER 振り返り共有シート　操作マニュアル</span>
+    <span class="tip">迷ったら「※」だけ埋めれば保存OK</span>
+  </div>
+
+</div>
+
     </div>
   </div>
 </div>
@@ -2108,6 +2441,7 @@ function init() {
   setupRoleManagement();
   setupStaffManager();
   setupFontSizeToggle();
+  setupGuide();
   initAllStaffSelects();
   refreshReporterList();
   refreshNotificationBadge();
@@ -2139,6 +2473,18 @@ function setupFontSizeToggle() {
       html.dataset.fontsize = next;
     }
     toast(`文字サイズを「${LABELS[next]}」に`);
+  });
+}
+
+// 使い方ガイド（操作マニュアル）モーダルを開く
+function setupGuide() {
+  const btn = $("#guideBtn");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    // 開くたびに先頭にスクロールを戻す
+    const content = $("#guideContent");
+    if (content) content.scrollTop = 0;
+    openModal("guideModal");
   });
 }
 
