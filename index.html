@@ -4197,20 +4197,83 @@ function setupSteppers() {
 // ════════════════════════════════════════════════════════════════
 //  タブ切替（入力 / 履歴 / 統計）
 // ════════════════════════════════════════════════════════════════
+// タブの並び順（スワイプ移動用）
+const TAB_ORDER = ["input", "history", "stats"];
+
+// 指定タブに切り替える（クリック・スワイプ共通）
+function switchToTab(target) {
+  if (!TAB_ORDER.includes(target)) return;
+  $$(".tab-btn").forEach(x => x.dataset.active = (x.dataset.tab === target ? "true" : "false"));
+  $("#tab-input").classList.toggle("hidden", target !== "input");
+  $("#tab-history").classList.toggle("hidden", target !== "history");
+  $("#tab-stats").classList.toggle("hidden", target !== "stats");
+  if (target === "history") renderHistory();
+  if (target === "stats") renderStats();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+// 現在アクティブなタブ名を返す
+function getActiveTab() {
+  const active = $('.tab-btn[data-active="true"]');
+  return active ? active.dataset.tab : "input";
+}
+
 function setupTabs() {
   $$(".tab-btn").forEach(b => {
-    b.addEventListener("click", () => {
-      const target = b.dataset.tab;
-      // 入力専用モードでも履歴・統計タブを開けるようにする（閲覧のみ）
-      $$(".tab-btn").forEach(x => x.dataset.active = (x === b ? "true" : "false"));
-      $("#tab-input").classList.toggle("hidden", target !== "input");
-      $("#tab-history").classList.toggle("hidden", target !== "history");
-      $("#tab-stats").classList.toggle("hidden", target !== "stats");
-      if (target === "history") renderHistory();
-      if (target === "stats") renderStats();
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
+    b.addEventListener("click", () => switchToTab(b.dataset.tab));
   });
+  setupSwipeNavigation();
+}
+
+// 画面の横スワイプでタブを移動する（誤爆対策あり）
+function setupSwipeNavigation() {
+  let startX = 0, startY = 0, tracking = false;
+
+  // スワイプを無視すべき要素の上で始まったか（入力・スクロール領域・モーダル等）
+  const shouldIgnore = (el) => {
+    if (!el) return false;
+    return !!el.closest(
+      'input, textarea, select, button, ' +
+      '.staff-select, .chip-group, .seg, .stepper, ' +
+      '.modal-backdrop, .staff-mgr-list, #guideContent, ' +
+      '[data-drag-handle], .staff-mgr-row-wrap'
+    );
+  };
+
+  document.addEventListener("touchstart", (e) => {
+    if (e.touches.length !== 1) { tracking = false; return; }
+    // モーダルが開いているときはスワイプ無効
+    if ($$('.modal-backdrop[data-open="true"]').length > 0) { tracking = false; return; }
+    if (shouldIgnore(e.target)) { tracking = false; return; }
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    tracking = true;
+  }, { passive: true });
+
+  document.addEventListener("touchend", (e) => {
+    if (!tracking) return;
+    tracking = false;
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const dx = endX - startX;
+    const dy = endY - startY;
+
+    // 誤爆対策：横移動が十分大きく(60px以上)、かつ横移動が縦移動より明確に大きい
+    if (Math.abs(dx) < 60) return;
+    if (Math.abs(dx) < Math.abs(dy) * 1.2) return;
+
+    const current = getActiveTab();
+    const idx = TAB_ORDER.indexOf(current);
+    if (idx < 0) return;
+
+    if (dx < 0 && idx < TAB_ORDER.length - 1) {
+      // 左スワイプ → 次のタブ
+      switchToTab(TAB_ORDER[idx + 1]);
+    } else if (dx > 0 && idx > 0) {
+      // 右スワイプ → 前のタブ
+      switchToTab(TAB_ORDER[idx - 1]);
+    }
+  }, { passive: true });
 }
 
 // ════════════════════════════════════════════════════════════════
