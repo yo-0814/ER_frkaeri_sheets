@@ -1193,30 +1193,20 @@
       </div>
 
       <div class="cond" id="break_detail">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="lbl">不足時間（分）</label>
-            <div class="stepper">
-              <button type="button" data-stp="f_short_min" data-delta="-10">−</button>
-              <input type="number" id="f_short_min" min="0" step="10" value="0" />
-              <button type="button" data-stp="f_short_min" data-delta="10">+</button>
-            </div>
-          </div>
-          <div>
-            <label class="lbl">対象人数</label>
-            <div class="stepper">
-              <!-- 対象人数は最低1名（休憩取れなかった人がいる前提なので） -->
-              <button type="button" data-stp="f_short_people" data-delta="-1" data-min="1">−</button>
-              <input type="number" id="f_short_people" min="1" value="1" />
-              <button type="button" data-stp="f_short_people" data-delta="1">+</button>
-            </div>
-          </div>
-          <div class="col-span-2">
-            <label class="lbl">応援要請（病棟・他部署）</label>
-            <div class="seg seg-2" data-seg-field="help_requested">
-              <button class="seg-btn" data-val="あり">あり</button>
-              <button class="seg-btn" data-val="なし">なし</button>
-            </div>
+        <div>
+          <label class="lbl">不足時間・対象人数</label>
+          <div id="shortTimesList" class="space-y-3"></div>
+          <button type="button" id="addShortTimeBtn" class="btn-secondary w-full mt-2 text-[13px] flex items-center justify-center gap-1.5">
+            <svg viewBox="0 0 24 24" width="15" height="15" class="ico"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            不足時間を追加
+          </button>
+        </div>
+
+        <div class="mt-3">
+          <label class="lbl">応援要請（病棟・他部署）</label>
+          <div class="seg seg-2" data-seg-field="help_requested">
+            <button class="seg-btn" data-val="あり">あり</button>
+            <button class="seg-btn" data-val="なし">なし</button>
           </div>
         </div>
 
@@ -1595,6 +1585,29 @@
 
     <div id="statsContent"></div>
 
+    <!-- ご意見・ご要望ボックス（誰でも投稿可・完全匿名） -->
+    <div class="card p-5">
+      <div class="flex items-center gap-2 mb-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico text-[var(--navy-700)]"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="font-display font-bold text-[15px]">ご意見ボックス・提案ボックス</div>
+      </div>
+      <p class="text-[12px] text-[var(--muted)] mb-3 leading-relaxed">アプリへの要望や現場で気づいたことがあれば、入力お願いします。</p>
+      <textarea id="feedbackInput" class="fld" rows="3" placeholder="例：〇〇の入力をもっと簡単にしてほしい／△△の機能があると助かる など"></textarea>
+      <button id="feedbackSendBtn" class="btn-secondary w-full mt-2 flex items-center justify-center gap-2">
+        <svg viewBox="0 0 24 24" width="16" height="16" class="ico"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        匿名で送信
+      </button>
+
+      <!-- 管理者のみ：投稿一覧 -->
+      <div class="admin-only mt-5 pt-4 border-t border-[var(--line)]">
+        <div class="flex items-center justify-between mb-2">
+          <div class="font-display font-bold text-[13px] text-[var(--navy-800)]">届いたご意見（管理者のみ表示）</div>
+          <button id="feedbackReloadBtn" class="text-[12px] text-[var(--navy-700)] underline">再読み込み</button>
+        </div>
+        <div id="feedbackList" class="space-y-2"></div>
+      </div>
+    </div>
+
     <!-- 使い方ガイド（誰でも閲覧可） -->
     <div class="card p-5">
       <div class="flex items-center gap-2 mb-2">
@@ -1834,7 +1847,7 @@
           <span class="field opt-pill">共有事項（任意）</span>
         </div>
         <div class="callout amber" style="margin-top:12px;">
-          ⓘ <b>選択で入力欄が増える項目があります。</b>休憩が「できなかった」→ 不足時間・人数・応援要請を入力。振り返りケースが「あり」→ 症例（搬送区分・年齢・性別・主訴・内容）を追加（複数可）。<b>症例は個人が特定されないように</b>記入してください。
+          ⓘ <b>選択で入力欄が増える項目があります。</b>休憩が「できなかった」→ 不足時間・対象人数・応援要請を入力。<b>不足時間が人によって違うときは「不足時間を追加」で何件でも増やせます</b>（例：30分の人と20分の人をそれぞれ記録）。振り返りケースが「あり」→ 症例（搬送区分・年齢・性別・主訴・内容）を追加（複数可）。<b>症例は個人が特定されないように</b>記入してください。
         </div>
       </div>
     </div>
@@ -1937,6 +1950,30 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- 統計タブでできること -->
+    <div class="sec">
+      <div class="sec-head">
+        <span class="tab-chip" style="background:var(--navy-2);">📊 統計タブでできること</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:11px;">
+        <div class="icon-card">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+          <div>
+            <div class="t">💬 ご意見ボックス・提案ボックス</div>
+            <div class="d">アプリへの要望や現場で気づいたことがあれば、ここから<b>匿名で</b>送れます。名前は記録されません。送っていただいた内容は管理者が確認します。気軽に書いてください。</div>
+          </div>
+        </div>
+        <div class="icon-card">
+          <div class="icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+          <div>
+            <div class="t">📖 使い方ガイド</div>
+            <div class="d">この操作マニュアルは、統計タブの<b>「使い方ガイドを開く」</b>からいつでも開けます。入力に迷ったときに確認してください。</div>
+          </div>
+        </div>
+      </div>
+      <div class="callout">📱 <b>タブの切り替え。</b>入力・履歴・統計のタブは、画面を<b>左右にスワイプ</b>しても移動できます。</div>
     </div>
 
     <!-- 管理画面 -->
@@ -2442,6 +2479,8 @@ function init() {
   setupStaffManager();
   setupFontSizeToggle();
   setupGuide();
+  setupShortTimes();
+  setupFeedback();
   initAllStaffSelects();
   refreshReporterList();
   refreshNotificationBadge();
@@ -2486,6 +2525,172 @@ function setupGuide() {
     if (content) content.scrollTop = 0;
     openModal("guideModal");
   });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  ご意見・ご要望ボックス（投稿は誰でも・完全匿名／閲覧は管理者のみ）
+// ════════════════════════════════════════════════════════════════
+function setupFeedback() {
+  const sendBtn = $("#feedbackSendBtn");
+  const input = $("#feedbackInput");
+  const reloadBtn = $("#feedbackReloadBtn");
+  if (sendBtn && input) {
+    sendBtn.addEventListener("click", () => {
+      const text = input.value.trim();
+      if (!text) { toast("内容を入力してください"); return; }
+      const fb = {
+        id: "fb_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+        text: text,
+        created_at_ms: Date.now(),
+      };
+      // 送信はキュー経由（オフラインでも後で送られる）
+      enqueueSync("feedback_add", fb);
+      flushSyncQueue().catch(() => {});
+      input.value = "";
+      toast("ご意見を送信しました。ありがとうございます");
+      // 管理者なら自分の投稿もすぐ見えるよう再読み込み
+      if (getRole() === "admin") {
+        setTimeout(() => loadFeedbackList(), 600);
+      }
+    });
+  }
+  if (reloadBtn) {
+    reloadBtn.addEventListener("click", () => loadFeedbackList());
+  }
+}
+
+// 管理者用：GASから投稿一覧を取得して表示
+async function loadFeedbackList() {
+  const listEl = $("#feedbackList");
+  if (!listEl) return;
+  if (getRole() !== "admin") return;
+  if (!GAS_URL || GAS_URL.startsWith("PLACEHOLDER")) {
+    listEl.innerHTML = `<div class="text-[12px] text-[var(--muted)]">サーバー未設定のため表示できません。</div>`;
+    return;
+  }
+  listEl.innerHTML = `<div class="text-[12px] text-[var(--muted)]">読み込み中…</div>`;
+  try {
+    const url = `${GAS_URL}?secret=${encodeURIComponent(GAS_SECRET)}&action=feedback&adminToken=${encodeURIComponent(GAS_ADMIN_TOKEN)}`;
+    const res = await fetch(url);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error || "failed");
+    renderFeedbackList(json.feedback || []);
+  } catch (err) {
+    listEl.innerHTML = `<div class="text-[12px] text-[var(--bad)]">読み込みに失敗しました（${escapeHtml(String(err.message || err))}）</div>`;
+  }
+}
+
+function renderFeedbackList(items) {
+  const listEl = $("#feedbackList");
+  if (!listEl) return;
+  if (!items.length) {
+    listEl.innerHTML = `<div class="text-[12px] text-[var(--muted)]">まだご意見はありません。</div>`;
+    return;
+  }
+  listEl.innerHTML = items.map(fb => {
+    const d = new Date(fb.created_at_ms);
+    const dateStr = isNaN(d.getTime()) ? "" :
+      `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+    return `
+      <div class="rounded-lg border border-[var(--line)] p-3 bg-white" data-fb-id="${escapeHtml(fb.id)}">
+        <div class="text-[13px] text-[var(--navy-800)] whitespace-pre-line leading-relaxed">${escapeHtml(fb.text)}</div>
+        <div class="flex items-center justify-between mt-2">
+          <span class="text-[11px] text-[var(--muted)]">${dateStr}</span>
+          <button class="text-[11px] text-[var(--bad)] underline" data-fb-del="${escapeHtml(fb.id)}">削除</button>
+        </div>
+      </div>`;
+  }).join("");
+
+  listEl.querySelectorAll("[data-fb-del]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.fbDel;
+      if (!window.confirm("この投稿を削除しますか？")) return;
+      enqueueSync("feedback_delete", { id });
+      flushSyncQueue().catch(() => {});
+      // 画面からも即時に消す
+      const card = listEl.querySelector(`[data-fb-id="${CSS.escape(id)}"]`);
+      if (card) card.remove();
+      if (!listEl.querySelector("[data-fb-id]")) {
+        listEl.innerHTML = `<div class="text-[12px] text-[var(--muted)]">まだご意見はありません。</div>`;
+      }
+      toast("削除しました");
+    });
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+//  不足時間リスト（不足時間＋対象人数のセットを追加できる）
+// ════════════════════════════════════════════════════════════════
+function setupShortTimes() {
+  const btn = $("#addShortTimeBtn");
+  if (btn) btn.addEventListener("click", () => addShortTime());
+}
+
+// 1セット = { min: 不足時間(分), people: 対象人数 }
+function addShortTime(min, people) {
+  const list = $("#shortTimesList");
+  if (!list) return;
+  const minVal = (typeof min === "number" && min >= 0) ? min : 0;
+  const peopleVal = (typeof people === "number" && people >= 1) ? people : 1;
+  // 2行目以降だけ削除ボタンを出す（1セット目は常に残す）
+  const isFirst = $$("#shortTimesList [data-short-row]").length === 0;
+  const row = document.createElement("div");
+  row.className = "short-set";
+  row.dataset.shortRow = "1";
+  row.innerHTML = `
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="lbl">不足時間（分）</label>
+        <div class="stepper">
+          <button type="button" class="st-min-minus">−</button>
+          <input type="number" class="short-min-input" min="0" step="10" value="${minVal}" inputmode="numeric" />
+          <button type="button" class="st-min-plus">＋</button>
+        </div>
+      </div>
+      <div>
+        <label class="lbl">対象人数</label>
+        <div class="stepper">
+          <button type="button" class="st-ppl-minus">−</button>
+          <input type="number" class="short-people-input" min="1" value="${peopleVal}" inputmode="numeric" />
+          <button type="button" class="st-ppl-plus">＋</button>
+        </div>
+      </div>
+    </div>
+    ${isFirst ? "" : `<button type="button" class="short-del text-[12px] text-[var(--bad)] mt-1.5 flex items-center gap-1">
+      <svg viewBox="0 0 24 24" width="13" height="13" class="ico"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+      この不足時間を削除
+    </button>`}
+  `;
+  const minInput = row.querySelector(".short-min-input");
+  const pplInput = row.querySelector(".short-people-input");
+  row.querySelector(".st-min-minus").addEventListener("click", () => {
+    minInput.value = Math.max(0, (parseInt(minInput.value, 10) || 0) - 10);
+  });
+  row.querySelector(".st-min-plus").addEventListener("click", () => {
+    minInput.value = (parseInt(minInput.value, 10) || 0) + 10;
+  });
+  row.querySelector(".st-ppl-minus").addEventListener("click", () => {
+    pplInput.value = Math.max(1, (parseInt(pplInput.value, 10) || 1) - 1);
+  });
+  row.querySelector(".st-ppl-plus").addEventListener("click", () => {
+    pplInput.value = (parseInt(pplInput.value, 10) || 1) + 1;
+  });
+  const delBtn = row.querySelector(".short-del");
+  if (delBtn) delBtn.addEventListener("click", () => row.remove());
+  list.appendChild(row);
+}
+
+function clearShortTimes() {
+  const list = $("#shortTimesList");
+  if (list) list.innerHTML = "";
+}
+
+// 入力中の不足時間セットを配列で取得：[{ min, people }, ...]
+function getShortTimeSets() {
+  return $$("#shortTimesList [data-short-row]").map(row => ({
+    min: parseInt(row.querySelector(".short-min-input").value, 10) || 0,
+    people: parseInt(row.querySelector(".short-people-input").value, 10) || 1,
+  }));
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3553,6 +3758,11 @@ async function flushSyncQueue() {
       } else if (item.action === "otsukare") {
         body.id = item.payload.id;
         body.count = item.payload.count;
+      } else if (item.action === "feedback_add") {
+        body.feedback = item.payload;
+      } else if (item.action === "feedback_delete") {
+        body.adminToken = GAS_ADMIN_TOKEN;
+        body.id = item.payload.id;
       }
       await postToGas(body);
       flushed++;
@@ -3560,6 +3770,10 @@ async function flushSyncQueue() {
       // not_found は「すでに削除されている」ので成功扱いにしてキューから除外
       const msg = String(err.message || err);
       if ((item.action === "delete" || item.action === "staff_delete") && msg.includes("not_found")) {
+        flushed++;
+        continue;
+      }
+      if (item.action === "feedback_delete" && msg.includes("not_found")) {
         flushed++;
         continue;
       }
@@ -4150,13 +4364,18 @@ function setupSegmented() {
 function handleConditionals(field, val) {
   if (field === "break_secured") {
     const box = $("#break_detail");
-    box.dataset.show = (val === "確保できなかった") ? "true" : "false";
-    if (val !== "確保できなかった") {
+    const show = (val === "確保できなかった");
+    box.dataset.show = show ? "true" : "false";
+    if (show) {
+      // 「確保できなかった」を選んだら、不足時間の入力行を最低1つ用意
+      if ($$("#shortTimesList [data-short-row]").length === 0) {
+        addShortTime();
+      }
+    } else {
       formState.help_requested = null;
       $$('[data-seg-field="help_requested"] .seg-btn').forEach(b => b.dataset.selected = "false");
       $("#help_no_reason").dataset.show = "false";
-      $("#f_short_min").value = 0;
-      $("#f_short_people").value = 1;
+      clearShortTimes();
       $("#f_no_help_reason").value = "";
     }
   }
@@ -4208,7 +4427,10 @@ function switchToTab(target) {
   $("#tab-history").classList.toggle("hidden", target !== "history");
   $("#tab-stats").classList.toggle("hidden", target !== "stats");
   if (target === "history") renderHistory();
-  if (target === "stats") renderStats();
+  if (target === "stats") {
+    renderStats();
+    if (getRole() === "admin") loadFeedbackList();
+  }
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -4838,13 +5060,20 @@ function buildRecord() {
       nurses: parseInt($("#f_nurses").value || "0", 10),
     },
     reporter: $("#f_reporter").value.trim(),
-    workload: {
-      break_secured: formState.break_secured,
-      short_min: formState.break_secured === "確保できなかった" ? parseInt($("#f_short_min").value || "0", 10) : 0,
-      short_people: formState.break_secured === "確保できなかった" ? parseInt($("#f_short_people").value || "0", 10) : 0,
-      help_requested: formState.break_secured === "確保できなかった" ? formState.help_requested : null,
-      no_help_reason: (formState.break_secured === "確保できなかった" && formState.help_requested === "なし") ? $("#f_no_help_reason").value.trim() : "",
-    },
+    workload: (() => {
+      const notSecured = formState.break_secured === "確保できなかった";
+      const sets = notSecured ? getShortTimeSets() : [];
+      return {
+        break_secured: formState.break_secured,
+        // 不足時間セットのリスト（新形式）：[{min, people}, ...]
+        short_sets: sets,
+        // 後方互換：1セット目を short_min/short_people に入れておく
+        short_min: sets.length > 0 ? sets[0].min : 0,
+        short_people: sets.reduce((a, s) => a + s.people, 0),
+        help_requested: notSecured ? formState.help_requested : null,
+        no_help_reason: (notSecured && formState.help_requested === "なし") ? $("#f_no_help_reason").value.trim() : "",
+      };
+    })(),
     team_state: {
       team_collab: formState.team_collab,
       team_collab_note: readNote("team_collab_note"),
@@ -4888,8 +5117,7 @@ function resetForm() {
       label.classList.add("staff-select-placeholder");
     }
   }
-  $("#f_short_min").value = 0;
-  $("#f_short_people").value = 1;
+  clearShortTimes();
   $("#f_no_help_reason").value = "";
   $("#f_patient_comment").value = "";
   $("#f_share").value = "";
@@ -4955,8 +5183,19 @@ function loadRecordToForm(rec) {
   if (rec.workload && rec.workload.break_secured) {
     selectSeg("break_secured", rec.workload.break_secured);
     if (rec.workload.break_secured === "確保できなかった") {
-      $("#f_short_min").value = rec.workload.short_min || 0;
-      $("#f_short_people").value = rec.workload.short_people || 1;
+      // 不足時間セットを復元
+      clearShortTimes();
+      const wl = rec.workload;
+      if (Array.isArray(wl.short_sets) && wl.short_sets.length > 0) {
+        // 新形式：{min, people} のセット
+        wl.short_sets.forEach(s => addShortTime(parseInt(s.min, 10) || 0, parseInt(s.people, 10) || 1));
+      } else if (Array.isArray(wl.short_times) && wl.short_times.length > 0) {
+        // 旧・中間形式：分のみの配列 → 各1名として復元
+        wl.short_times.forEach(m => addShortTime(parseInt(m, 10) || 0, 1));
+      } else {
+        // 最旧形式：short_min/short_people → 1セットで復元
+        addShortTime(parseInt(wl.short_min, 10) || 0, parseInt(wl.short_people, 10) || 1);
+      }
       if (rec.workload.help_requested) {
         selectSeg("help_requested", rec.workload.help_requested);
         if (rec.workload.help_requested === "なし") {
@@ -5343,10 +5582,26 @@ function histTeamNotesBlock(r) {
 
 function histBreakBadBlock(r) {
   if (r.workload.break_secured !== "確保できなかった") return "";
+  const wl = r.workload;
+  let detail;
+  if (Array.isArray(wl.short_sets) && wl.short_sets.length > 0) {
+    // 新形式：各セットを「30分（1名）」で並べる
+    const parts = wl.short_sets.map(s =>
+      `<span class="font-bold text-[var(--bad)] num-tabular">${parseInt(s.min,10)||0}分</span>（${parseInt(s.people,10)||1}名）`
+    );
+    detail = `不足 ${parts.join("、")}`;
+  } else if (Array.isArray(wl.short_times) && wl.short_times.length > 0) {
+    // 中間形式：分のみの配列
+    const parts = wl.short_times.map(m => `<span class="font-bold text-[var(--bad)] num-tabular">${parseInt(m,10)||0}分</span>`);
+    detail = `不足 ${parts.join("、")}`;
+  } else {
+    // 最旧形式
+    detail = `不足 <span class="font-bold text-[var(--bad)] num-tabular">${wl.short_min || 0}分</span> ／ ${wl.short_people || 0}名`;
+  }
   return `
     <div class="mt-3 pt-3 border-t border-[var(--line)] text-[11px] text-[var(--muted)]">
-      不足 <span class="font-bold text-[var(--bad)] num-tabular">${r.workload.short_min}分</span> ／ ${r.workload.short_people}名
-      ${r.workload.help_requested ? ` ／ 応援要請: <span class="font-semibold text-[var(--navy-800)]">${r.workload.help_requested}</span>` : ""}
+      ${detail}
+      ${wl.help_requested ? ` ／ 応援要請: <span class="font-semibold text-[var(--navy-800)]">${wl.help_requested}</span>` : ""}
     </div>`;
 }
 
@@ -6093,7 +6348,7 @@ function doExport() {
   }
   const headers = [
     "No.","日付","保存時刻","勤務帯","記録者","看護師数","時差勤務",
-    "休憩確保","不足時間(分)","対象人数","応援要請","応援なし理由",
+    "休憩確保","不足時間内訳（｜区切り）","対象人数合計","応援要請","応援なし理由",
     "チーム連携","チーム連携_場面","他機関連携","他機関連携_場面","心理的安全性","心理的安全性_場面",
     "接遇","待ち時間配慮","不安軽減","患者家族コメント",
     "ケース有無","ケース件数","搬送区分（｜区切り）","年齢（｜区切り）","性別（｜区切り）","主訴（｜区切り）","ケース内容（｜｜区切り）",
@@ -6114,7 +6369,18 @@ function doExport() {
     return [
       idx + 1, r.date, r.saved_time, r.shift || "", r.reporter || "",
       r.team.nurses, r.shift_diff || "",
-      r.workload.break_secured || "", r.workload.short_min || 0, r.workload.short_people || 0,
+      r.workload.break_secured || "",
+      (() => {
+        const wl = r.workload;
+        if (Array.isArray(wl.short_sets) && wl.short_sets.length > 0) {
+          return wl.short_sets.map(s => `${parseInt(s.min,10)||0}分:${parseInt(s.people,10)||1}名`).join("｜");
+        }
+        if (Array.isArray(wl.short_times) && wl.short_times.length > 0) {
+          return wl.short_times.map(m => `${parseInt(m,10)||0}分`).join("｜");
+        }
+        return wl.short_min ? `${wl.short_min}分:${wl.short_people||0}名` : "";
+      })(),
+      (r.workload.short_people || 0),
       r.workload.help_requested || "", r.workload.no_help_reason || "",
       r.team_state.team_collab || "", r.team_state.team_collab_note || "",
       r.team_state.external_collab || "", r.team_state.external_collab_note || "",
